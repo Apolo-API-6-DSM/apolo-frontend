@@ -52,38 +52,18 @@ export default function ListagemChamado() {
         }
     }
 
-    async function handleDelecaoChamado() {
-        if (!chamadoIdDelete) return;
-
-        try {
-            const response = await chamadoRequests.delete(chamadoIdDelete)
-            if (response.status === 200) {
-                addToast({ visible: true, message: `Chamado deletado com sucesso`, type: 'success', position: 'bottom-left' })
-            }
-        } catch (error: any) {
-            console.log(error)
-            if (error.response && error.response.data) {
-                addToast({ visible: true, message: `Erro ao deletar o chamado: ${error.response.data}`, type: 'error', position: 'bottom-left' })
-            } else {
-                addToast({ visible: true, message: `Erro ao deletar o chamado`, type: 'error', position: 'bottom-left' })
-            }
-        }
-        setKey(prev => prev + 1);
-        setOpenDialog(false);
-    }
-
     return (
         <>
             <div className="bg-bg-100 p-4 rounded-md drop-shadow">
                 <h1 className="text-text-on-background text-base font-medium">Gerenciamento de Chamados</h1>
             </div>
             <form onSubmit={handleSubmit(handleFiltroChamado)} className="bg-bg-100 p-4 rounded-md drop-shadow flex gap-4">
-                <Input width="w-60" placeholder="Título..." {...register("titulo")} error={errors.titulo?.message} />
-                <Input width="w-60" placeholder="Status" {...register("status")} error={errors.status?.message} />
+                <Input width="w-60" placeholder="Status:" {...register("status")} error={errors.status?.message} />
+                <Input width="w-60" placeholder="Responsável:" {...register("responsavel")} error={errors.responsavel?.message} />
+                <Input width="w-60" placeholder="Sentimento:" {...register("sentimento")} error={errors.sentimento?.message} />
                 <Button text="Filtrar" variant="ghost" type="submit" Icon={RiSearch2Line} iconPosition="left" />
             </form>
             <div className="flex flex-col gap-2 w-fit h-fit">
-                <Button text="Adicionar Chamado" variant="primary" Icon={AiOutlinePlus} iconPosition="left" onClick={() => router.push("/admin/chamados/cadastro")} />
                 <div className="bg-bg-100 px-4 py-4 rounded-md drop-shadow w-fit">
                     <table className="w-fit">
                         <thead className="text-text-on-background-disabled text-sm font-semibold border-b-2 border-text-on-background-disabled">
@@ -103,15 +83,6 @@ export default function ListagemChamado() {
                                     <td className="px-4 w-80 max-w-80 truncate">{chamado.descricao}</td>
                                     <td className="px-4 w-40 max-w-40 truncate">{chamado.status}</td>
                                     <td className="px-4 w-24 max-w-24 text-center">
-                                        <ActionsDrodown actions={[
-                                            { label: "Editar", onClick: () => { router.push(`/admin/chamados/editar/${chamado.idChamado}`) } },
-                                            {
-                                                label: "Excluir", onClick: () => {
-                                                    setChamadoIdDelete(chamado.idChamado)
-                                                    setOpenDialog(true)
-                                                }
-                                            }
-                                        ]} />
                                     </td>
                                 </tr>
                             ))}
@@ -127,16 +98,6 @@ export default function ListagemChamado() {
                     </div>
                 </div>
             </div>
-            {openDialog &&
-                <Dialog.Root>
-                    <Dialog.Icon icon={AiFillWarning} color="text-accent-65" />
-                    <Dialog.Content title="Atenção" text="Deseja realmente deletar este chamado?" />
-                    <Dialog.Actions>
-                        <Dialog.Action button={<Button text="Cancelar" variant="outline" onClick={() => { setOpenDialog(false) }} />} />
-                        <Dialog.Action button={<Button text="Confirmar" variant="accent" onClick={() => { handleDelecaoChamado() }} />} />
-                    </Dialog.Actions>
-                </Dialog.Root>
-            }
         </>
     )
 }
