@@ -40,7 +40,9 @@ const CardChamados: React.FC<CardChamadosProps> = ({ chamado }) => {
       <p className="text-sm">Responsável: {chamado.responsavel}</p>
       <p className="text-sm">Tipo: {chamado.tipo}</p>
 
-      <button className="mt-4 px-4 py-2 bg-primary text-white rounded">Ver Mais</button>
+      <button className="mt-4 px-4 py-2 bg-white text-primary border border-primary rounded">
+        Ver Mais
+      </button>
     </div>
   );
 };

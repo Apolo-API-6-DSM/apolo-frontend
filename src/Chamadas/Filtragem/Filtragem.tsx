@@ -18,7 +18,7 @@ const Filtragem = ({ onFilter }: { onFilter: (filters: any) => void }) => {
   };
 
   return (
-    <div className="p-4 bg-filterBackground shadow rounded-md w-80">
+    <div className="p-4 bg-filterBackground rounded-md w-80">
       <h3 className="text-lg font-bold mb-4 text-primary">FILTROS</h3>
 
       <label className="block mb-2 text-primary">Status:</label>
