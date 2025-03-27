@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from 'react';
-import CardChamados from '@/Chamadas/CardChamados/CardChamados';
-import Filtragem from '@/Chamadas/Filtragem/Filtragem';
+import CardChamados from '../CardChamados/CardChamados';
+import Filtragem from '../Filtragem/Filtragem';
 import Navbar from '@/Components/NavBar';
 
 const mockData = [
