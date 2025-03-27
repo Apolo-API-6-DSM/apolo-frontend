@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+"use client";
+
+import React, { useState } from "react";
 
 const Filtragem = ({ onFilter }: { onFilter: (filters: any) => void }) => {
   const [filters, setFilters] = useState({
-    status: '',
-    responsavel: '',
-    sentimento: '',
-    dataInicio: '',
-    dataFim: '',
+    status: "",
+    responsavel: "",
+    sentimento: "",
+    dataInicio: "",
+    dataFim: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -18,58 +20,66 @@ const Filtragem = ({ onFilter }: { onFilter: (filters: any) => void }) => {
   };
 
   return (
-    <div className="p-4 bg-filterBackground rounded-md w-80">
+    <div className="p-6 bg-gray-200 h-[481px] rounded-md w-80 shadow-md border border-gray-300">
       <h3 className="text-lg font-bold mb-4 text-primary">FILTROS</h3>
-
-      <label className="block mb-2 text-primary">Status:</label>
-      <select
-        name="status"
-        className="w-full p-2 border border-gray-300 rounded"
-        onChange={handleChange}
-      >
-        <option value="">Selecione status</option>
-        <option value="aberto">Aberto</option>
-        <option value="pendente">Pendente</option>
-        <option value="concluido">Concluído</option>
-      </select>
-
-      <label className="block my-2 text-primary">Responsável:</label>
-      <input
-        name="responsavel"
-        type="text"
-        className="w-full p-2 border border-gray-300 rounded"
-        onChange={handleChange}
-      />
-
-      <label className="block my-2 text-primary">Sentimento:</label>
-      <input
-        name="sentimento"
-        type="text"
-        className="w-full p-2 border border-gray-300 rounded"
-        onChange={handleChange}
-      />
-
-      <label className="block my-2 text-primary">Data Início:</label>
-      <input
-        name="dataInicio"
-        type="date"
-        className="w-full p-2 border border-gray-300 rounded"
-        onChange={handleChange}
-      />
-
-      <label className="block my-2 text-primary">Data Fim:</label>
-      <input
-        name="dataFim"
-        type="date"
-        className="w-full p-2 border border-gray-300 rounded"
-        onChange={handleChange}
-      />
-
+      <div className="mb-4">
+        <label className="block text-sm font-semibold text-primary mb-1">Status:</label>
+        <select
+          name="status"
+          className="w-full p-2 border border-gray-300 rounded-md bg-white"
+          onChange={handleChange}
+        >
+          <option value="">Selecione status</option>
+          <option value="aberto">Aberto</option>
+          <option value="pendente">Pendente</option>
+          <option value="concluido">Concluído</option>
+        </select>
+      </div>
+      <div className="mb-4">
+        <label className="block text-sm font-semibold text-primary mb-1">Responsável:</label>
+        <input
+          name="responsavel"
+          type="text"
+          className="w-full bg-white p-2 border border-gray-300 rounded-md"
+          placeholder="Escreva nome do responsável..."
+          onChange={handleChange}
+        />
+      </div>
+      <div className="mb-4">
+        <label className="block text-sm font-semibold text-primary mb-1">Sentimento:</label>
+        <input
+          name="sentimento"
+          type="text"
+          className="w-full bg-white p-2 border border-gray-300 rounded-md"
+          placeholder="Escreva o sentimento..."
+          onChange={handleChange}
+        />
+      </div>
+      <div className="flex gap-2">
+        <div className="w-1/2">
+          <label className="block text-sm font-semibold text-primary mb-1">Data Início:</label>
+          <input
+            name="dataInicio"
+            type="date"
+            className="w-full bg-white p-2 border border-gray-300 rounded-md"
+            onChange={handleChange}
+          />
+        </div>
+        <div className="w-1/2">
+          <label className="block text-sm font-semibold text-primary mb-1">Data Fim:</label>
+          <input
+            name="dataFim"
+            type="date"
+            className="w-full bg-white p-2 border border-gray-300 rounded-md"
+            onChange={handleChange}
+          />
+        </div>
+      </div>
       <button
-        className="w-full mt-4 p-2 bg-primary text-white rounded hover:bg-opacity-90"
+        className="w-full mt-4 p-2 bg-blue-950 text-white rounded-md hover:bg-opacity-90 transition"
         onClick={handleSubmit}
       >
-        Filtrar
+        FILTRAR
       </button>
     </div>
   );
