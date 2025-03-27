@@ -1,176 +1,189 @@
 'use client'
-import { useState, ChangeEvent, DragEvent } from 'react';
+import { useState, useCallback, ChangeEvent, DragEvent } from 'react';
+import { importJiraCSV } from '@/services/service';
+import {cleanCSV}  from '@/utils/csvUtils';
 
-type ProcessedFile = {
-  id: number;
-  name: string;
-  headers: string[];
-  data: string[][];
-};
-
-export default function UploadCSV() {
-  const [data, setData] = useState<string[][]>([]);
-  const [headers, setHeaders] = useState<string[]>([]);
+export default function ImportacaoPage() {
   const [isDragging, setIsDragging] = useState(false);
-  const [selectedType, setSelectedType] = useState<'alternativo' | 'jira' | ''>('');
-  const [processedFiles, setProcessedFiles] = useState<ProcessedFile[]>([]);
-  const [selectedFile, setSelectedFile] = useState<ProcessedFile | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [selectedSource, setSelectedSource] = useState('jira');
 
-  const handleFileUpload = (file: File) => {
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const text = e.target?.result as string;
-        processCSV(text, file.name);
-      };
-      reader.readAsText(file);
+  const handleFileUpload = async (file: File) => {
+    setIsUploading(true);
+    setUploadProgress(0);
+    setMessage(null);
+
+    try {
+      // Primeiro, limpar o CSV
+      const csvText = await file.text();
+      const cleanedCsvData = cleanCSV(csvText);
+      
+      // Criar novo arquivo limpo
+      const blob = new Blob([cleanedCsvData.header + '\n' + cleanedCsvData.data.join('\n')], { 
+        type: 'text/csv' 
+      });
+      const cleanedFile = new File([blob], file.name, { type: 'text/csv' });
+
+      // Realizar importação com arquivo limpo
+      const result = await importJiraCSV(cleanedFile);
+      
+      setIsUploading(false);
+      setUploadProgress(100);
+
+      if (result.success) {
+        setMessage({
+          text: `Importação concluída! ${result.data.processedIds?.length || 0} chamados processados.`,
+          type: 'success',
+        });
+      } else {
+        setMessage({
+          text: result.error || 'Erro na importação',
+          type: 'error',
+        });
+      }
+    } catch (error) {
+      console.error('Erro na importação:', error);
+      setIsUploading(false);
+      setMessage({
+        text: 'Erro inesperado na importação',
+        type: 'error',
+      });
     }
   };
 
-  const processCSV = (csvText: string, fileName: string) => {
-    const rows = csvText.split('\n');
-    const headers = rows[0].split(',');
-    const data = rows.slice(1).map((row) => row.split(','));
-
-    const newFile: ProcessedFile = {
-      id: processedFiles.length + 1,
-      name: fileName,
-      headers,
-      data,
-    };
-
-    setProcessedFiles([...processedFiles, newFile]);
-    setHeaders(headers);
-    setData(data);
-  };
-
-  const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
+  const handleDragEnter = useCallback((e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(true);
-  };
+  }, []);
 
-  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+  const handleDragLeave = useCallback((e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
-  };
+  }, []);
 
-  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+  const handleDragOver = useCallback((e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-  };
+  }, []);
 
-  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+  const handleDrop = useCallback((e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files[0];
-    if (file && file.type === 'text/csv' && selectedType) {
+    if (file && (file.type === 'text/csv' || file.name.endsWith('.csv'))) {
       handleFileUpload(file);
     } else {
-      alert('Por favor, selecione um tipo e arraste um arquivo CSV válido.');
+      setMessage({ text: 'Por favor, selecione um arquivo CSV válido', type: 'error' });
     }
-  };
+  }, []);
 
   const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && selectedType) {
+    if (file && (file.type === 'text/csv' || file.name.endsWith('.csv'))) {
       handleFileUpload(file);
-    } else {
-      alert('Por favor, selecione um tipo antes de enviar o arquivo.');
     }
   };
 
-  const handleFileClick = (file: ProcessedFile) => {
-    setSelectedFile(file);
-    setHeaders(file.headers);
-    setData(file.data);
+  const handleSourceChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setSelectedSource(e.target.value);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-8">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">Importar CSV</h1>
-      <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-lg">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+      <div className="w-full max-w-2xl bg-white rounded-xl shadow-md p-8">
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">Importar CSV</h1>
+        
         <div className="mb-6">
-          <select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value as 'alternativo' | 'jira')}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
+          <label htmlFor="source-select" className="block text-sm font-medium text-gray-700 mb-2">
+            Selecione a fonte de importação
+          </label>
+          <select 
+            id="source-select" 
+            value={selectedSource}
+            onChange={handleSourceChange}
+            className="w-full p-2 border border-gray-300 rounded-md"
           >
-            <option value="">Selecione o tipo</option>
-            <option value="alternativo">Alternativo</option>
             <option value="jira">Jira</option>
+            <option value="alternativo">Alternativo</option>
           </select>
         </div>
+        
         <div
-          className={`border-2 border-dashed ${
-            isDragging ? 'border-blue-500' : 'border-gray-300'
-          } rounded-lg p-8 text-center cursor-pointer transition-colors duration-200`}
+          className={`border-2 border-dashed rounded-lg p-12 text-center mb-6 transition-colors ${
+            isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+          }`}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
         >
-          <p className="text-gray-600 mb-4">Arraste e solte um arquivo CSV aqui</p>
-          <p className="text-gray-500 text-sm mb-4">ou</p>
-          <input
-            type="file"
-            accept=".csv"
-            onChange={handleFileInputChange}
-            className="hidden"
-            id="fileInput"
-          />
-          <label
-            htmlFor="fileInput"
-            className="inline-block px-6 py-2 bg-blue-500 text-white rounded-lg cursor-pointer hover:bg-blue-600 transition-colors duration-200"
-          >
-            Selecione um arquivo
-          </label>
-        </div>
-      </div>
-      {data.length > 0 && (
-        <div className="w-full max-w-4xl mt-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Dados do CSV</h2>
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <table className="min-w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  {headers.map((header, index) => (
-                    <th key={index} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {data.map((row, rowIndex) => (
-                  <tr key={rowIndex}>
-                    {row.map((cell, cellIndex) => (
-                      <td key={cellIndex} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {cell}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="flex flex-col items-center justify-center space-y-2">
+            <UploadIcon className="h-12 w-12 text-gray-400" />
+            <p className="text-gray-600">
+              Arraste e solte seu arquivo CSV aqui
+            </p>
+            <p className="text-sm text-gray-500">ou</p>
+            <label className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors">
+              Selecione um arquivo
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleFileInputChange}
+                className="hidden"
+              />
+            </label>
           </div>
         </div>
-      )}
-      {processedFiles.length > 0 && (
-        <div className="w-full max-w-4xl mt-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Arquivos Processados</h2>
-          <ul className="bg-white rounded-lg shadow-lg p-6">
-            {processedFiles.map((file) => (
-              <li
-                key={file.id}
-                onClick={() => handleFileClick(file)}
-                className="cursor-pointer text-blue-500 hover:text-blue-700 mb-2"
-              >
-                {file.name}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+
+        {isUploading && (
+          <div className="mb-6">
+            <div className="flex justify-between mb-1">
+              <span className="text-sm font-medium">Enviando arquivo...</span>
+              <span className="text-sm font-medium">{uploadProgress}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div
+                className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {message && (
+          <div
+            className={`p-4 rounded-lg mb-6 ${
+              message.type === 'success'
+                ? 'bg-green-100 text-green-700'
+                : 'bg-red-100 text-red-700'
+            }`}
+          >
+            {message.text}
+          </div>
+        )}
+      </div>
     </div>
+  );
+}
+
+function UploadIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" />
+      <line x1="12" x2="12" y1="3" y2="15" />
+    </svg>
   );
 }
