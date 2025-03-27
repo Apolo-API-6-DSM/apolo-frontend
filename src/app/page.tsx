@@ -1,11 +1,5 @@
-import Image from "next/image";
-import Navbar from "../components/Navbar/Navbar";
-import Importacao from "@/pages/Importacao";
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <><Navbar />
-    <Importacao />
-    </>
-  );
+  redirect('/importacao'); 
 }

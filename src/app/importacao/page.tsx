@@ -1,7 +1,6 @@
 'use client'
 import { useState, useCallback, ChangeEvent, DragEvent } from 'react';
 import { importJiraCSV } from '@/services/service';
-import {cleanCSV}  from '@/utils/csvUtils';
 
 export default function ImportacaoPage() {
   const [isDragging, setIsDragging] = useState(false);
@@ -16,22 +15,14 @@ export default function ImportacaoPage() {
     setMessage(null);
 
     try {
-      const csvText = await file.text();
-      const cleanedCsvData = cleanCSV(csvText);
-      
-      const blob = new Blob([cleanedCsvData.header + '\n' + cleanedCsvData.data.join('\n')], { 
-        type: 'text/csv' 
-      });
-      const cleanedFile = new File([blob], file.name, { type: 'text/csv' });
-
-      const result = await importJiraCSV(cleanedFile);
+      const result = await importJiraCSV(file);
       
       setIsUploading(false);
       setUploadProgress(100);
 
       if (result.success) {
         setMessage({
-          text: `Importação concluída! ${result.data.processedIds?.length || 0} chamados processados.`,
+          text: `Importação concluída! Chamados processados.`,
           type: 'success',
         });
       } else {
@@ -121,7 +112,7 @@ export default function ImportacaoPage() {
               Arraste e solte seu arquivo CSV aqui
             </p>
             <p className="text-sm text-gray-500">ou</p>
-            <label className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors">
+            <label className="cursor-pointer bg-[#00163B] hover:bg-[#001e4f] text-white px-4 py-2 rounded-md transition-colors">
               Selecione um arquivo
               <input
                 type="file"
