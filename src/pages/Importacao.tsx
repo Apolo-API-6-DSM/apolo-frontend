@@ -16,17 +16,14 @@ export default function ImportacaoPage() {
     setMessage(null);
 
     try {
-      // Primeiro, limpar o CSV
       const csvText = await file.text();
       const cleanedCsvData = cleanCSV(csvText);
       
-      // Criar novo arquivo limpo
       const blob = new Blob([cleanedCsvData.header + '\n' + cleanedCsvData.data.join('\n')], { 
         type: 'text/csv' 
       });
       const cleanedFile = new File([blob], file.name, { type: 'text/csv' });
 
-      // Realizar importação com arquivo limpo
       const result = await importJiraCSV(cleanedFile);
       
       setIsUploading(false);
