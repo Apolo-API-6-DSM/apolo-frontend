@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import CardChamados from '@/Chamadas/CardChamados/CardChamados';
 import Filtragem from '@/Chamadas/Filtragem/Filtragem';
+import Navbar from '@/Components/NavBar';
 
 const mockData = [
   { id: 1, status: 'aberto', sentimento: 'Sentimento Negativo', dataInicio: '2025-03-24', dataFim: '2025-03-25', responsavel: 'João', tipo: 'Suporte' },
@@ -37,35 +38,37 @@ const ListaChamado = () => {
   };
 
   return (
-    <div className="p-8 bg-gray-200 min-h-screen">
-      <div className="flex mb-8 w-[947px] bg-white p-2 border border-gray-300 rounded-md">
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full outline-none px-2"
-          placeholder="Pesquisar por responsável, sentimento ou tipo..."
-        />
-        <button
-          onClick={handleSearch}
-          className="bg-blue-100 w-[46px] text-white p-2 rounded-md hover:bg-opacity-80 transition flex items-center"
-        >
-          <img src="/lupa.svg" />
-        </button>
-      </div>
+    <>
+      <Navbar />
+      <div className="p-8 bg-gray-200 min-h-screen">
+        <div className="flex items-center mt-14 w-[947px] bg-white p-2 border border-gray-300 rounded-md">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full outline-none px-2"
+            placeholder="Pesquisar por responsável, sentimento ou tipo..." />
+          <button
+            onClick={handleSearch}
+            className="bg-blue-100 w-[46px] text-white p-2 rounded-md hover:bg-opacity-80 transition flex items-center"
+          >
+            <img src="/lupa.svg" />
+          </button>
+        </div>
 
-      <div className="flex space-x-8">
-        <Filtragem onFilter={handleFilter} />
+        <div className="flex mt-4 space-x-8">
+          <Filtragem onFilter={handleFilter} />
 
-        <div className="w-full">
-          {calls.length > 0 ? (
-            calls.map((chamado) => <CardChamados key={chamado.id} chamado={chamado} />)
-          ) : (
-            <p className="text-gray-500 text-center mt-4">Nenhum chamado encontrado.</p>
-          )}
+          <div className="w-full">
+            {calls.length > 0 ? (
+              calls.map((chamado) => <CardChamados key={chamado.id} chamado={chamado} />)
+            ) : (
+              <p className="text-gray-500 text-center mt-4">Nenhum chamado encontrado.</p>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

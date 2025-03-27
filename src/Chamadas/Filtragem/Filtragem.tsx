@@ -21,7 +21,7 @@ const Filtragem = ({ onFilter }: { onFilter: (filters: any) => void }) => {
 
   return (
     <div className="p-6 bg-gray-200 h-[481px] rounded-md w-80 shadow-md border border-gray-300">
-      <h3 className="text-lg font-bold mb-4 text-primary">FILTROS</h3>
+      <h3 className="text-lg text-center font-bold mb-4 text-primary">FILTROS</h3>
       <div className="mb-4">
         <label className="block text-sm font-semibold text-primary mb-1">Status:</label>
         <select
@@ -76,7 +76,7 @@ const Filtragem = ({ onFilter }: { onFilter: (filters: any) => void }) => {
         </div>
       </div>
       <button
-        className="w-full mt-4 p-2 bg-blue-950 text-white rounded-md hover:bg-opacity-90 transition"
+        className="w-full mt-4 p-2 bg-blue-950 text-white rounded-[10px] hover:bg-opacity-90 transition"
         onClick={handleSubmit}
       >
         FILTRAR

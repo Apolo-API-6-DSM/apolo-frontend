@@ -30,7 +30,7 @@ const CardChamados: React.FC<CardChamadosProps> = ({ chamado }) => {
   };
 
   return (
-    <div className="bg-blue-100 p-6 rounded-md shadow-md border border-gray-300">
+    <div className="bg-blue-100 p-6 justify-between rounded-md shadow-md border border-gray-300">
       <h4 className="text-lg font-bold text-primary">CHAMADO {chamado.id}</h4>
 
       <div className="flex flex-wrap items-center space-x-2 mt-2">
@@ -56,7 +56,7 @@ const CardChamados: React.FC<CardChamadosProps> = ({ chamado }) => {
         <strong>Tipo:</strong> {chamado.tipo}
       </p>
 
-      <button className="mt-4 px-5 py-2 bg-white rounded-[20px] text-primary border border-primary hover:bg-black hover:text-white transition">
+      <button className="mt-4 px-5 py-2 bg-white rounded-[20px] text-primary border-primary hover:bg-black hover:text-white transition">
         VER MAIS
       </button>
     </div>
