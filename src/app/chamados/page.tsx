@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from 'react';
-import CardChamados from '../CardChamados/CardChamados';
-import Filtragem from '../Filtragem/Filtragem';
-import Navbar from '@/Components/NavBar';
+import CardChamados from '../../components/Chamadas/CardChamados/CardChamados';
+import Filtragem from '../../components/Chamadas/Filtragem/Filtragem';
+import Navbar from '@/components/NavBar';
 
 const mockData = [
   { id: 1, status: 'aberto', sentimento: 'Sentimento Negativo', dataInicio: '2025-03-24', dataFim: '2025-03-25', responsavel: 'João', tipo: 'Suporte' },
