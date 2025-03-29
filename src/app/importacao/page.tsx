@@ -1,28 +1,41 @@
 'use client'
 import { useState, useCallback, ChangeEvent, DragEvent } from 'react';
 import { importJiraCSV } from '@/services/service';
+import { useRouter } from 'next/navigation';
 
 export default function ImportacaoPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadPhase, setUploadPhase] = useState<'upload' | 'processing'>('upload');
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [selectedSource, setSelectedSource] = useState('jira');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
 
   const handleFileUpload = async (file: File) => {
     setIsUploading(true);
     setUploadProgress(0);
+    setUploadPhase('upload');
     setMessage(null);
+    setSelectedFile(file);
 
     try {
-      const result = await importJiraCSV(file);
+      const result = await importJiraCSV(file, (progress, phase) => {
+        setUploadProgress(progress);
+        setUploadPhase(phase);
+      });
       
-      setIsUploading(false);
-      setUploadProgress(100);
-
       if (result.success) {
         setMessage({
-          text: `Importação concluída! Chamados processados.`,
+          text: `Importação concluída! ${result.data?.processedItems || 'Chamados'} processados.`,
           type: 'success',
         });
       } else {
@@ -33,11 +46,12 @@ export default function ImportacaoPage() {
       }
     } catch (error) {
       console.error('Erro na importação:', error);
-      setIsUploading(false);
       setMessage({
         text: 'Erro inesperado na importação',
         type: 'error',
       });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -60,6 +74,7 @@ export default function ImportacaoPage() {
     setIsDragging(false);
     const file = e.dataTransfer.files[0];
     if (file && (file.type === 'text/csv' || file.name.endsWith('.csv'))) {
+      setSelectedFile(file);
       handleFileUpload(file);
     } else {
       setMessage({ text: 'Por favor, selecione um arquivo CSV válido', type: 'error' });
@@ -69,6 +84,7 @@ export default function ImportacaoPage() {
   const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && (file.type === 'text/csv' || file.name.endsWith('.csv'))) {
+      setSelectedFile(file);
       handleFileUpload(file);
     }
   };
@@ -76,6 +92,8 @@ export default function ImportacaoPage() {
   const handleSourceChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setSelectedSource(e.target.value);
   };
+
+  const router = useRouter();
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
@@ -127,15 +145,24 @@ export default function ImportacaoPage() {
         {isUploading && (
           <div className="mb-6">
             <div className="flex justify-between mb-1">
-              <span className="text-sm font-medium">Enviando arquivo...</span>
+              <span className="text-sm font-medium">
+                {uploadPhase === 'upload' ? 'Enviando arquivo...' : 'Processando dados...'}
+              </span>
               <span className="text-sm font-medium">{uploadProgress}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2.5">
               <div
-                className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                className={`h-2.5 rounded-full transition-all duration-300 ${
+                  uploadPhase === 'upload' ? 'bg-blue-600' : 'bg-green-600'
+                }`}
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
+            {uploadPhase === 'upload' && selectedFile && (
+              <p className="text-xs text-gray-500 mt-1">
+                Enviando {formatFileSize(selectedFile.size)}...
+              </p>
+            )}
           </div>
         )}
 
@@ -148,7 +175,20 @@ export default function ImportacaoPage() {
             }`}
           >
             {message.text}
+
+            
           </div>
+        )}
+
+        {message?.type === 'success' && (
+            <div className="flex justify-center">
+            <button 
+              onClick={() => router.push('/chamados')}
+              className="cursor-pointer bg-[#00163B] hover:bg-[#001e4f] text-white px-4 py-2 rounded-md transition-colors"
+            >
+              Ver Chamados
+            </button>
+            </div>
         )}
       </div>
     </div>
