@@ -15,18 +15,54 @@ interface CardChamadosProps {
 }
 
 const CardChamados: React.FC<CardChamadosProps> = ({ chamado }) => {
-  // Cores para os status
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "aberto":
-        return "bg-yellow-500 text-white";
-      case "pendente":
-        return "bg-orange-500 text-white";
-      case "concluido":
-        return "bg-green-500 text-white";
-      default:
-        return "bg-gray-500 text-white";
-    }
+  console.log('Status recebido:', chamado.status);
+
+  const debugStatus = () => {
+    const status = chamado.status || 'undefined';
+    const normalized = status.toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .trim();
+    console.log('Status debug:', {
+      original: status,
+      normalized: normalized,
+      type: typeof status
+    });
+  };
+
+  debugStatus();
+
+  const getStatusColor = () => {
+    if (!chamado.status) return 'bg-gray-500';
+    
+    const normalizedStatus = chamado.status
+      .toString() 
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") 
+      .replace(/\s+/g, ' ') 
+      .trim();
+
+    // Mapeamento direto dos valores esperados
+    const colorMap: Record<string, string> = {
+      'aberto': 'bg-yellow-500',
+      'pendente': 'bg-red-500',
+      'concluido': 'bg-green-500',
+      'resolvido': 'bg-green-500', 
+      'fechado': 'bg-green-500' 
+    };
+
+    return colorMap[normalizedStatus] || 'bg-gray-500';
+  };
+
+  const getStatusText = () => {
+    if (!chamado.status) return 'N/D';
+    
+    const status = chamado.status.toLowerCase().trim();
+    
+    if (status === 'aberto') return 'ABERTO';
+    if (status === 'pendente') return 'PENDENTE';
+    if (status === 'concluído' || status === 'concluido') return 'CONCLUÍDO';
+    
+    return chamado.status.toUpperCase();
   };
 
   return (
@@ -34,11 +70,11 @@ const CardChamados: React.FC<CardChamadosProps> = ({ chamado }) => {
       <h4 className="text-lg font-semibold text-primary">CHAMADO {chamado.id}</h4>
 
       <div className="flex flex-wrap items-center space-x-2 mt-2">
-        <span className={`px-3 py-1 rounded-md text-xs font-bold ${getStatusColor(chamado.status)}`}>
-          STATUS
+        <span className={`px-3 py-1 rounded-md text-xs font-bold text-white ${getStatusColor()}`}>
+          {getStatusText()}
         </span>
-        <span className="px-3 py-1 rounded-md text-xs font-bold bg-white text-red-500">
-          🔴 {chamado.sentimento}
+        <span className="px-3 py-1 rounded-md text-xs font-bold bg-white">
+          {chamado.sentimento}
         </span>
       </div>
 
@@ -57,13 +93,11 @@ const CardChamados: React.FC<CardChamadosProps> = ({ chamado }) => {
         </p>
       </div>
 
-
       <div className="mt-4 flex justify-end">
         <button className="px-5 py-2 bg-white rounded-[20px] w-[143px] text-center text-primary border-primary hover:bg-black hover:text-white transition">
           VER MAIS
         </button>
       </div>
-
     </div>
   );
 };

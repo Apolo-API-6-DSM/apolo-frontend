@@ -1,37 +1,70 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CardChamados from '../../components/Chamadas/CardChamados/CardChamados';
 import Filtragem from '../../components/Chamadas/Filtragem/Filtragem';
 import Navbar from '@/components/NavBar';
 
-const mockData = [
-  { id: 1, status: 'aberto', sentimento: 'Sentimento Negativo', dataInicio: '2025-03-24', dataFim: '2025-03-25', responsavel: 'João', tipo: 'Suporte' },
-  { id: 2, status: 'pendente', sentimento: 'Sentimento Neutro', dataInicio: '2025-03-24', dataFim: '2025-03-26', responsavel: 'Maria', tipo: 'Alteração' },
-  { id: 3, status: 'concluido', sentimento: 'Sentimento Positivo', dataInicio: '2025-03-22', dataFim: '2025-03-23', responsavel: 'Pedro', tipo: 'Atualização' },
-  { id: 4, status: 'pendente', sentimento: 'Sentimento Negativo', dataInicio: '2025-03-21', dataFim: '2025-03-22', responsavel: 'Ana', tipo: 'Correção' },
-  { id: 5, status: 'aberto', sentimento: 'Sentimento Neutro', dataInicio: '2025-03-20', dataFim: '2025-03-21', responsavel: 'Carlos', tipo: 'Suporte' },
-  { id: 6, status: 'pendente', sentimento: 'Sentimento Negativo', dataInicio: '2025-03-20', dataFim: '2025-03-21', responsavel: 'Nicole', tipo: 'Alteração' },
-  { id: 7, status: 'pendente', sentimento: 'Sentimento Neutro', dataInicio: '2025-03-24', dataFim: '2025-03-26', responsavel: 'Melissa', tipo: 'Alteração' },
-  { id: 8, status: 'concluido', sentimento: 'Sentimento Positivo', dataInicio: '2025-03-22', dataFim: '2025-03-23', responsavel: 'Carolina', tipo: 'Atualização' },
-  { id: 9, status: 'pendente', sentimento: 'Sentimento Negativo', dataInicio: '2025-03-21', dataFim: '2025-03-22', responsavel: 'David', tipo: 'Correção' },
-  { id: 10, status: 'aberto', sentimento: 'Sentimento Neutro', dataInicio: '2025-03-20', dataFim: '2025-03-21', responsavel: 'Paulo', tipo: 'Suporte' },
-  { id: 11, status: 'aberto', sentimento: 'Sentimento Neutro', dataInicio: '2025-03-20', dataFim: '2025-03-21', responsavel: 'Carlos', tipo: 'Suporte' },
-  { id: 12, status: 'pendente', sentimento: 'Sentimento Negativo', dataInicio: '2025-03-20', dataFim: '2025-03-21', responsavel: 'Nicole', tipo: 'Alteração' },
-  { id: 13, status: 'pendente', sentimento: 'Sentimento Neutro', dataInicio: '2025-03-24', dataFim: '2025-03-26', responsavel: 'Melissa', tipo: 'Alteração' },
-  { id: 14, status: 'concluido', sentimento: 'Sentimento Positivo', dataInicio: '2025-03-22', dataFim: '2025-03-23', responsavel: 'Carolina', tipo: 'Atualização' },
-  { id: 15, status: 'pendente', sentimento: 'Sentimento Negativo', dataInicio: '2025-03-21', dataFim: '2025-03-22', responsavel: 'David', tipo: 'Correção' },
-];
+// Atualizada interface para corresponder ao seu modelo Prisma
+interface Chamado {
+  id: number;
+  status: string;
+  sentimento: string;
+  responsavel: string;
+  tipo_importacao: string;
+  data_abertura: string;
+  ultima_atualizacao: string;
+  titulo?: string;
+  id_importado?: string;
+}
 
 const tamanhoPagina = 5; // Quantidade de chamados por página
 
+// Base URL para o backend NestJS
+const API_BASE_URL = 'http://localhost:3003';
+
 const ListaChamado = () => {
-  const [calls, setCalls] = useState(mockData);
+  const [isLoading, setIsLoading] = useState(true);
+  const [calls, setCalls] = useState<Chamado[]>([]);
+  const [allCalls, setAllCalls] = useState<Chamado[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [pagina, setPagina] = useState(1);
+  const [error, setError] = useState<string | null>(null);
 
   const totalPaginas = Math.ceil(calls.length / tamanhoPagina);
   const hasMorePages = pagina < totalPaginas;
+
+  useEffect(() => {
+    fetchChamados();
+  }, []);
+
+  const fetchChamados = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/chamados`);
+      if (!response.ok) {
+        throw new Error('Erro ao carregar chamados');
+      }
+      
+      const data = await response.json();
+      
+      console.log('Dados recebidos do backend:', data);
+      if (data.length > 0) {
+        console.log('Exemplo de datas no primeiro chamado:');
+        console.log('data_abertura:', data[0].data_abertura);
+        console.log('ultima_atualizacao:', data[0].ultima_atualizacao);
+      }
+      
+      setAllCalls(data);
+      setCalls(data);
+      setError(null);
+    } catch (err) {
+      setError('Falha ao carregar os chamados. Por favor, tente novamente.');
+      console.error('Erro ao buscar chamados:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPaginas) {
@@ -39,46 +72,152 @@ const ListaChamado = () => {
     }
   };
 
-  const handleFilter = (filters: any) => {
-    const filtered = mockData.filter((chamado) => (
-      (filters.status ? chamado.status === filters.status : true) &&
-      (filters.responsavel ? chamado.responsavel.includes(filters.responsavel) : true) &&
-      (filters.sentimento ? chamado.sentimento.includes(filters.sentimento) : true) &&
-      (filters.dataInicio ? chamado.dataInicio >= filters.dataInicio : true) &&
-      (filters.dataFim ? chamado.dataFim <= filters.dataFim : true)
-    ));
-    setCalls(filtered);
-    setPagina(1);
+  const handleFilter = async (filters: any) => {
+    setIsLoading(true);
+    
+    try {
+      let filteredData: Chamado[] = [];
+      
+      const hasDateFilter = filters.dataInicio || filters.dataFim;
+      
+      if (filters.status) {
+        const response = await fetch(`${API_BASE_URL}/chamados/status?status=${filters.status}`);
+        if (!response.ok) {
+          throw new Error('Erro ao filtrar por status');
+        }
+        filteredData = await response.json();
+      } 
+      else if (filters.sentimento) {
+        const response = await fetch(`${API_BASE_URL}/chamados/sentimento?sentimento=${filters.sentimento}`);
+        if (!response.ok) {
+          throw new Error('Erro ao filtrar por sentimento');
+        }
+        filteredData = await response.json();
+      }
+      else if (filters.tipo_importacao) {
+        const response = await fetch(`${API_BASE_URL}/chamados/tipo-importacao?tipo_importacao=${filters.tipo_importacao}`);
+        if (!response.ok) {
+          throw new Error('Erro ao filtrar por tipo de importação');
+        }
+        filteredData = await response.json();
+      }
+      else if (hasDateFilter) {
+        try {
+          const queryParams = new URLSearchParams();
+          if (filters.dataInicio) queryParams.append('dataInicio', filters.dataInicio);
+          if (filters.dataFim) queryParams.append('dataFim', filters.dataFim);
+          
+          const response = await fetch(`${API_BASE_URL}/chamados/data?${queryParams.toString()}`);
+          if (response.ok) {
+            filteredData = await response.json();
+          } else {
+            throw new Error('API endpoint not available');
+          }
+        } catch (error) {
+          console.log('Usando filtragem client-side para datas', error);
+          filteredData = allCalls.filter((chamado) => {
+            let matchesFilter = true;
+            
+            if (filters.dataInicio && chamado.data_abertura) {
+              const filterDate = new Date(filters.dataInicio);
+              const chamadoDate = new Date(chamado.data_abertura);
+              matchesFilter = matchesFilter && chamadoDate >= filterDate;
+            }
+            
+            if (filters.dataFim && chamado.ultima_atualizacao) {
+              const filterDate = new Date(filters.dataFim);
+              const chamadoDate = new Date(chamado.ultima_atualizacao);
+              matchesFilter = matchesFilter && chamadoDate <= filterDate;
+            }
+            
+            return matchesFilter;
+          });
+        }
+      }
+      else if (filters.responsavel) {
+        filteredData = allCalls.filter((chamado) => 
+          chamado.responsavel?.toLowerCase().includes(filters.responsavel.toLowerCase())
+        );
+      }
+      else {
+        filteredData = allCalls;
+      }
+      
+      setCalls(filteredData);
+      setPagina(1);
+      setError(null);
+    } catch (err) {
+      setError('Falha ao aplicar filtros. Por favor, tente novamente.');
+      console.error('Erro ao filtrar chamados:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSearch = () => {
-    const searchedCalls = mockData.filter((chamado) =>
-      chamado.responsavel.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      chamado.sentimento.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      chamado.tipo.toLowerCase().includes(searchTerm.toLowerCase())
+    if (!searchTerm.trim()) {
+      setCalls(allCalls);
+      return;
+    }
+    
+    const searchLower = searchTerm.toLowerCase();
+    const searchedCalls = allCalls.filter((chamado) =>
+      (chamado.responsavel?.toLowerCase().includes(searchLower)) ||
+      (chamado.sentimento?.toLowerCase().includes(searchLower)) ||
+      (chamado.tipo_importacao?.toLowerCase().includes(searchLower)) ||
+      (chamado.status?.toLowerCase().includes(searchLower))
     );
+    
     setCalls(searchedCalls);
     setPagina(1);
   };
 
   const chamadosPaginados = calls.slice((pagina - 1) * tamanhoPagina, pagina * tamanhoPagina);
 
+  const adaptChamadoForCard = (chamado: Chamado) => {
+    // Função para formatar a data em um formato legível (dd/mm/aaaa)
+    const formatDate = (dateString: string | null | undefined) => {
+      if (!dateString) return 'Não definida';
+      
+      try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return 'Data inválida';
+        
+        return date.toLocaleDateString('pt-BR');
+      } catch (error) {
+        console.error('Erro ao formatar data:', dateString, error);
+        return 'Erro na data';
+      }
+    };
+
+    return {
+      id: chamado.id,
+      status: chamado.status || 'Não definido',
+      sentimento: chamado.sentimento || 'Não disponível',
+      dataInicio: formatDate(chamado.data_abertura),
+      dataFim: formatDate(chamado.ultima_atualizacao),
+      responsavel: chamado.responsavel || 'Não atribuído',
+      tipo: chamado.tipo_importacao || 'Não categorizado',
+      titulo: chamado.titulo || 'Sem título'
+    };
+  };
+
   return (
     <>
-      <Navbar />
       <div className="p-8 bg-gray-200 min-h-screen">
-      <div className="flex items-center justify-center w-full mt-14 p-2">
+        <div className="flex items-center justify-center w-full mt-14 p-2">
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-[947px] bg-white border h-[37px] border-gray-300 rounded-md outline-none px-2"
+            placeholder="Pesquisar por responsável, sentimento ou tipo..."
           />
           <button
             onClick={handleSearch}
             className="bg-blue-100 w-[46px] outline-none px-2 border-gray-300 ml-4 text-white p-2 rounded-md hover:bg-opacity-80 transition flex items-center"
           >
-            <img src="/lupa.svg" />
+            <img src="/lupa.svg" alt="Pesquisar" />
           </button>
         </div>
 
@@ -86,9 +225,26 @@ const ListaChamado = () => {
           <Filtragem onFilter={handleFilter} />
 
           <div className="w-full flex flex-col space-y-4">
-            {chamadosPaginados.length > 0 ? (
+            {isLoading ? (
+              <div className="text-center py-8">
+                <p>Carregando chamados...</p>
+              </div>
+            ) : error ? (
+              <div className="text-center py-8 text-red-500">
+                <p>{error}</p>
+                <button 
+                  onClick={fetchChamados}
+                  className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  Tentar novamente
+                </button>
+              </div>
+            ) : chamadosPaginados.length > 0 ? (
               chamadosPaginados.map((chamado) => (
-                <CardChamados key={chamado.id} chamado={chamado} />
+                <CardChamados 
+                  key={chamado.id} 
+                  chamado={adaptChamadoForCard(chamado)} 
+                />
               ))
             ) : (
               <p className="text-gray-500 text-center mt-4">Nenhum chamado encontrado.</p>
