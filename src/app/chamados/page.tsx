@@ -4,18 +4,20 @@ import React, { useState, useEffect } from 'react';
 import CardChamados from '../../components/Chamadas/CardChamados/CardChamados';
 import Filtragem from '../../components/Chamadas/Filtragem/Filtragem';
 import Navbar from '@/components/NavBar';
+import Filtros from '../../components/Chamadas/Filtragem/Filtragem';
 
 // Atualizada interface para corresponder ao seu modelo Prisma
 interface Chamado {
   id: number;
   status: string;
-  sentimento: string;
+  sentimento_cliente: string;
   responsavel: string;
   tipo_importacao: string;
   data_abertura: string;
   ultima_atualizacao: string;
   titulo?: string;
   id_importado?: string;
+  tipo_documento?: string;
 }
 
 const tamanhoPagina = 5; // Quantidade de chamados por página
@@ -46,8 +48,7 @@ const ListaChamado = () => {
         throw new Error('Erro ao carregar chamados');
       }
       
-      const data = await response.json();
-      
+      const data = await response.json();      
       console.log('Dados recebidos do backend:', data);
       if (data.length > 0) {
         console.log('Exemplo de datas no primeiro chamado:');
@@ -76,71 +77,62 @@ const ListaChamado = () => {
     setIsLoading(true);
     
     try {
-      let filteredData: Chamado[] = [];
+      let filteredData: Chamado[] = [...allCalls]; // Começa com todos os chamados
       
-      const hasDateFilter = filters.dataInicio || filters.dataFim;
-      
+      // Aplica cada filtro sequencialmente
       if (filters.status) {
-        const response = await fetch(`${API_BASE_URL}/chamados/status?status=${filters.status}`);
-        if (!response.ok) {
-          throw new Error('Erro ao filtrar por status');
-        }
-        filteredData = await response.json();
-      } 
-      else if (filters.sentimento) {
-        const response = await fetch(`${API_BASE_URL}/chamados/sentimento?sentimento=${filters.sentimento}`);
-        if (!response.ok) {
-          throw new Error('Erro ao filtrar por sentimento');
-        }
-        filteredData = await response.json();
-      }
-      else if (filters.tipo_importacao) {
-        const response = await fetch(`${API_BASE_URL}/chamados/tipo-importacao?tipo_importacao=${filters.tipo_importacao}`);
-        if (!response.ok) {
-          throw new Error('Erro ao filtrar por tipo de importação');
-        }
-        filteredData = await response.json();
-      }
-      else if (hasDateFilter) {
-        try {
-          const queryParams = new URLSearchParams();
-          if (filters.dataInicio) queryParams.append('dataInicio', filters.dataInicio);
-          if (filters.dataFim) queryParams.append('dataFim', filters.dataFim);
+        const normalizedStatus = filters.status.toLowerCase();
+        filteredData = filteredData.filter(chamado => {
+          const chamadoStatus = chamado.status?.toLowerCase() || '';
           
-          const response = await fetch(`${API_BASE_URL}/chamados/data?${queryParams.toString()}`);
-          if (response.ok) {
-            filteredData = await response.json();
-          } else {
-            throw new Error('API endpoint not available');
-          }
-        } catch (error) {
-          console.log('Usando filtragem client-side para datas', error);
-          filteredData = allCalls.filter((chamado) => {
-            let matchesFilter = true;
-            
-            if (filters.dataInicio && chamado.data_abertura) {
-              const filterDate = new Date(filters.dataInicio);
-              const chamadoDate = new Date(chamado.data_abertura);
-              matchesFilter = matchesFilter && chamadoDate >= filterDate;
-            }
-            
-            if (filters.dataFim && chamado.ultima_atualizacao) {
-              const filterDate = new Date(filters.dataFim);
-              const chamadoDate = new Date(chamado.ultima_atualizacao);
-              matchesFilter = matchesFilter && chamadoDate <= filterDate;
-            }
-            
-            return matchesFilter;
-          });
-        }
+          // Mapeamento de status equivalentes
+          const statusMap: Record<string, string[]> = {
+            'aberto': ['aberto', 'em andamento'],
+            'pendente': ['pendente', 'aguardando pelo suporte', 'itens pendentes'],
+            'concluido': ['concluido', 'concluído', 'concluída', 'resolvido', 'fechado']
+          };
+          
+          // Verifica se o status do chamado corresponde ao filtro
+          return statusMap[normalizedStatus]?.includes(chamadoStatus) || chamadoStatus === normalizedStatus;
+        });
       }
-      else if (filters.responsavel) {
-        filteredData = allCalls.filter((chamado) => 
-          chamado.responsavel?.toLowerCase().includes(filters.responsavel.toLowerCase())
+      
+      if (filters.sentimento_cliente) {
+        filteredData = filteredData.filter(chamado => 
+          chamado.sentimento_cliente?.toLowerCase().includes(filters.sentimento_cliente.toLowerCase())
         );
       }
-      else {
-        filteredData = allCalls;
+      
+      if (filters.tipo_importacao) {
+        filteredData = filteredData.filter(chamado => 
+          chamado.tipo_importacao?.toLowerCase().includes(filters.tipo_importacao.toLowerCase())
+        );
+      }
+      
+      if (filters.dataInicio || filters.dataFim) {
+        filteredData = filteredData.filter(chamado => {
+          let matchesFilter = true;
+          
+          if (filters.dataInicio && chamado.data_abertura) {
+            const filterDate = new Date(filters.dataInicio);
+            const chamadoDate = new Date(chamado.data_abertura);
+            matchesFilter = matchesFilter && chamadoDate >= filterDate;
+          }
+          
+          if (filters.dataFim && chamado.ultima_atualizacao) {
+            const filterDate = new Date(filters.dataFim);
+            const chamadoDate = new Date(chamado.ultima_atualizacao);
+            matchesFilter = matchesFilter && chamadoDate <= filterDate;
+          }
+          
+          return matchesFilter;
+        });
+      }
+      
+      if (filters.responsavel) {
+        filteredData = filteredData.filter(chamado => 
+          chamado.responsavel?.toLowerCase().includes(filters.responsavel.toLowerCase())
+        );
       }
       
       setCalls(filteredData);
@@ -163,7 +155,7 @@ const ListaChamado = () => {
     const searchLower = searchTerm.toLowerCase();
     const searchedCalls = allCalls.filter((chamado) =>
       (chamado.responsavel?.toLowerCase().includes(searchLower)) ||
-      (chamado.sentimento?.toLowerCase().includes(searchLower)) ||
+      (chamado.sentimento_cliente?.toLowerCase().includes(searchLower)) ||
       (chamado.tipo_importacao?.toLowerCase().includes(searchLower)) ||
       (chamado.status?.toLowerCase().includes(searchLower))
     );
@@ -191,14 +183,15 @@ const ListaChamado = () => {
     };
 
     return {
-      id: chamado.id,
+      id: chamado.id_importado,
       status: chamado.status || 'Não definido',
-      sentimento: chamado.sentimento || 'Não disponível',
+      sentimento: chamado.sentimento_cliente || 'Não disponível',
       dataInicio: formatDate(chamado.data_abertura),
       dataFim: formatDate(chamado.ultima_atualizacao),
       responsavel: chamado.responsavel || 'Não atribuído',
       tipo: chamado.tipo_importacao || 'Não categorizado',
-      titulo: chamado.titulo || 'Sem título'
+      titulo: chamado.titulo || 'Sem título',
+      tipo_documento: chamado.tipo_documento || 'Sem título'
     };
   };
 
@@ -212,6 +205,7 @@ const ListaChamado = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-[947px] bg-white border h-[37px] border-gray-300 rounded-md outline-none px-2"
             placeholder="Pesquisar por responsável, sentimento ou tipo..."
+            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
           />
           <button
             onClick={handleSearch}
@@ -220,10 +214,11 @@ const ListaChamado = () => {
             <img src="/lupa.svg" alt="Pesquisar" />
           </button>
         </div>
-
+  
         <div className="flex mt-4 space-x-8">
-          <Filtragem onFilter={handleFilter} />
-
+          {/* Componente de Filtros atualizado */}
+          <Filtros onFilter={handleFilter} />
+  
           <div className="w-full flex flex-col space-y-4">
             {isLoading ? (
               <div className="text-center py-8">
@@ -239,37 +234,58 @@ const ListaChamado = () => {
                   Tentar novamente
                 </button>
               </div>
-            ) : chamadosPaginados.length > 0 ? (
-              chamadosPaginados.map((chamado) => (
-                <CardChamados 
-                  key={chamado.id} 
-                  chamado={adaptChamadoForCard(chamado)} 
-                />
-              ))
+            ) : calls.length > 0 ? (
+              <>
+                {/* Lista de chamados paginados */}
+                {calls
+                  .slice((pagina - 1) * tamanhoPagina, pagina * tamanhoPagina)
+                  .map((chamado) => (
+                    <CardChamados 
+                      key={chamado.id} 
+                      chamado={{
+                        id: chamado.id_importado || chamado.id,
+                        status: chamado.status,
+                        sentimento: chamado.sentimento_cliente || '',
+                        dataInicio: chamado.data_abertura || '',
+                        dataFim: chamado.ultima_atualizacao || '',
+                        responsavel: chamado.responsavel || '',
+                        tipo: chamado.tipo_importacao || '',
+                        tipo_documento: chamado.tipo_documento || '',
+                        titulo: chamado.titulo || ''
+                      }} 
+                    />
+                  ))
+                }
+  
+                {/* Paginação */}
+                {calls.length > tamanhoPagina && (
+                  <div className="flex justify-end mt-4">
+                    <div className="bg-white px-4 py-2 rounded-md shadow-md flex gap-2 items-center">
+                      <button
+                        onClick={() => handlePageChange(pagina - 1)}
+                        disabled={pagina <= 1}
+                        className={`px-3 py-1 rounded-md ${pagina <= 1 ? "text-gray-400 cursor-not-allowed" : "text-blue-500 hover:bg-blue-100"}`}
+                      >
+                        Anterior
+                      </button>
+                      <span className="text-gray-700 font-medium">
+                        {pagina} de {totalPaginas}
+                      </span>
+                      <button
+                        onClick={() => handlePageChange(pagina + 1)}
+                        disabled={!hasMorePages}
+                        className={`px-3 py-1 rounded-md ${!hasMorePages ? "text-gray-400 cursor-not-allowed" : "text-blue-500 hover:bg-blue-100"}`}
+                      >
+                        Próximo
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
             ) : (
-              <p className="text-gray-500 text-center mt-4">Nenhum chamado encontrado.</p>
-            )}
-
-            {calls.length > tamanhoPagina && (
-              <div className="flex justify-end mt-4">
-                <div className="bg-white px-4 py-2 rounded-md shadow-md flex gap-2 items-center">
-                  <button
-                    onClick={() => handlePageChange(pagina - 1)}
-                    disabled={pagina <= 1}
-                    className={`px-3 py-1 rounded-md ${pagina <= 1 ? "text-gray-400 cursor-not-allowed" : "text-blue-500 hover:bg-blue-100"}`}
-                  >
-                    Anterior
-                  </button>
-                  <span className="text-gray-700 font-medium">{pagina} de {totalPaginas}</span>
-                  <button
-                    onClick={() => handlePageChange(pagina + 1)}
-                    disabled={!hasMorePages}
-                    className={`px-3 py-1 rounded-md ${!hasMorePages ? "text-gray-400 cursor-not-allowed" : "text-blue-500 hover:bg-blue-100"}`}
-                  >
-                    Próximo
-                  </button>
-                </div>
-              </div>
+              <p className="text-gray-500 text-center mt-4">
+                Nenhum chamado encontrado com os filtros aplicados.
+              </p>
             )}
           </div>
         </div>
