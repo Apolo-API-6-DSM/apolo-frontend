@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 
 interface CardChamadosProps {
   chamado: {
@@ -15,53 +16,39 @@ interface CardChamadosProps {
 }
 
 const CardChamados: React.FC<CardChamadosProps> = ({ chamado }) => {
-  console.log('Status recebido:', chamado.status);
-
-  const debugStatus = () => {
-    const status = chamado.status || 'undefined';
-    const normalized = status.toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .trim();
-    console.log('Status debug:', {
-      original: status,
-      normalized: normalized,
-      type: typeof status
-    });
-  };
-
-  debugStatus();
+  const router = useRouter();
 
   const getStatusColor = () => {
-    if (!chamado.status) return 'bg-gray-500';
-    
+    if (!chamado.status) return "bg-gray-500";
+
     const normalizedStatus = chamado.status
-      .toString() 
+      .toString()
       .toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") 
-      .replace(/\s+/g, ' ') 
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
       .trim();
 
-    // Mapeamento direto dos valores esperados
     const colorMap: Record<string, string> = {
-      'aberto': 'bg-yellow-500',
-      'pendente': 'bg-red-500',
-      'concluido': 'bg-green-500',
-      'resolvido': 'bg-green-500', 
-      'fechado': 'bg-green-500' 
+      aberto: "bg-yellow-500",
+      pendente: "bg-red-500",
+      concluido: "bg-green-500",
+      resolvido: "bg-green-500",
+      fechado: "bg-green-500",
     };
 
-    return colorMap[normalizedStatus] || 'bg-gray-500';
+    return colorMap[normalizedStatus] || "bg-gray-500";
   };
 
   const getStatusText = () => {
-    if (!chamado.status) return 'N/D';
-    
+    if (!chamado.status) return "N/D";
+
     const status = chamado.status.toLowerCase().trim();
-    
-    if (status === 'aberto') return 'ABERTO';
-    if (status === 'pendente') return 'PENDENTE';
-    if (status === 'concluído' || status === 'concluido') return 'CONCLUÍDO';
-    
+
+    if (status === "aberto") return "ABERTO";
+    if (status === "pendente") return "PENDENTE";
+    if (status === "concluído" || status === "concluido") return "CONCLUÍDO";
+
     return chamado.status.toUpperCase();
   };
 
@@ -94,7 +81,10 @@ const CardChamados: React.FC<CardChamadosProps> = ({ chamado }) => {
       </div>
 
       <div className="mt-4 flex justify-end">
-        <button className="px-5 py-2 bg-white rounded-[20px] w-[143px] text-center text-primary border-primary hover:bg-black hover:text-white transition">
+        <button
+          className="px-5 py-2 bg-white rounded-[20px] w-[143px] text-center text-primary border-primary hover:bg-black hover:text-white transition"
+          onClick={() => router.push(`/chamado/${chamado.id}`)}
+        >
           VER MAIS
         </button>
       </div>
