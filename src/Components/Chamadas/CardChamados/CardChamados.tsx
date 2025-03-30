@@ -20,6 +20,10 @@ interface CardChamadosProps {
 const CardChamados: React.FC<CardChamadosProps> = ({ chamado }) => {
   const router = useRouter();
 
+  const handleVerMais = () => {
+    router.push(`/chamados/${chamado.id}`);
+  };
+
   const formatarData = (dataISO: string) => {
     if (!dataISO) return '';
     
@@ -123,7 +127,10 @@ const CardChamados: React.FC<CardChamadosProps> = ({ chamado }) => {
       </div>
 
       <div className="mt-4 flex justify-end">
-        <button className="px-5 py-2 bg-white rounded-[20px] w-[143px] text-center text-primary border border-primary hover:bg-black hover:text-white transition">
+        <button
+          className="px-5 py-2 bg-white rounded-[20px] w-[143px] text-center text-primary border-primary hover:bg-black hover:text-white transition"
+          onClick={handleVerMais}
+        >
           VER MAIS
         </button>
       </div>

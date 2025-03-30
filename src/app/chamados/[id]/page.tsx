@@ -6,33 +6,46 @@ import DetalhesChamado from "@/Components/Chamadas/Detalhes/DetalhesChamados";
 import { fetchTicketById } from "@/services/service";
 
 const ChamadoPage = () => {
-  const { id } = useParams(); // Obtém o ID corretamente
-  const [chamado, setChamado] = useState(null);
+  const { id } = useParams();
+  const [chamado, setChamado] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!id) return;
-
     const loadChamado = async () => {
-      const result = await fetchTicketById(id as string);
-
-      if (result.success) {
-        setChamado(result.data);
-      } else {
-        setError(result.error);
+      try {
+        console.log(`Buscando chamado com ID: ${id}`);
+        const result = await fetchTicketById(id as string);
+        console.log("Resultado da API:", result);
+        
+        if (result.success) {
+          // Verifique a estrutura dos dados recebidos
+          console.log("Dados completos recebidos:", result.data);
+          setChamado(result.data.chamado || result.data); // Ajuste para acessar a propriedade correta
+        } else {
+          setError(result.error || "Erro desconhecido");
+        }
+      } catch (err) {
+        console.error("Erro ao carregar chamado:", err);
+        setError("Erro ao carregar os dados do chamado");
+      } finally {
+        setIsLoading(false);
       }
-
-      setIsLoading(false);
     };
 
-    loadChamado();
+    if (id) {
+      loadChamado();
+    } else {
+      setError("ID do chamado não fornecido");
+      setIsLoading(false);
+    }
   }, [id]);
 
-  if (isLoading) return <p>Carregando...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
-  if (!chamado) return <p className="text-gray-500">Chamado não encontrado.</p>;
+  if (isLoading) return <div className="p-6">Carregando chamado...</div>;
+  if (error) return <div className="p-6 text-red-500">{error}</div>;
+  if (!chamado) return <div className="p-6">Chamado não encontrado</div>;
 
+  console.log("Dados sendo passados para DetalhesChamado:", chamado);
   return <DetalhesChamado chamado={chamado} />;
 };
 
