@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🖥️ apolo-frontend - Painel de Gerenciamento de Chamados
 
-## Getting Started
+![Next.js](https://img.shields.io/badge/Next.js-14.0+-black?logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue?logo=typescript)
+![React](https://img.shields.io/badge/React-18.2+-61DAFB?logo=react)
 
-First, run the development server:
+Frontend moderno para visualização e gerenciamento de chamados, integrado com o backend apolo-IA.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Início Rápido
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+# Clone o repositório
+git clone https://github.com/Apolo-API-6-DSM/apolo-frontend
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+cd apolo-frontend
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Instale as dependências
+npm install
 
-## Learn More
+# Execute em modo desenvolvimento
+npm run dev ou npm run start
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+📂 Estrutura do Projeto
+```text
+apolo-frontend/
+├── app/
+│   ├── chamados/               # Páginas de chamados
+│   │   ├── page.tsx            # Listagem principal
+│   │   └── [id]/page.tsx       # Detalhes do chamado
+│   ├── importacao/             # Página de importação
+│   ├── layout.tsx              # Layout principal
+│   └── page.tsx                # Homepage
+├── public/                     # Assets estáticos
+│   └── favicon.ico             # Ícone do site
+├── src/
+│   ├── Components/             # Componentes reutilizáveis
+│   ├── services/               # API services
+│   └── types/                  # Tipos TypeScript
+├── next.config.ts              # Configuração do Next
+├── globals.css                 # Estilos globais
+└── package.json                # Dependências
