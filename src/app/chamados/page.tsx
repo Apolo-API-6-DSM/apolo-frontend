@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import CardChamados from '../../Components/Chamadas/CardChamados/CardChamados';
 import { fetchTickets } from '../../services/service';
 
@@ -17,6 +17,15 @@ interface Chamado {
   tipo_documento?: string;
 }
 
+interface FilterState {
+  status: string;
+  sentimento_cliente: string;
+  tipo_importacao: string;
+  responsavel: string;
+  dataInicio: string;
+  dataFim: string;
+}
+
 const tamanhoPagina = 10;
 
 const ListaChamado = () => {
@@ -26,13 +35,63 @@ const ListaChamado = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [pagina, setPagina] = useState(1);
   const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
+  
+  // Estado para armazenar as opções únicas para os selects
+  const [statusOptions, setStatusOptions] = useState<string[]>([]);
+  const [sentimentoOptions, setSentimentoOptions] = useState<string[]>([]);
+  const [tipoOptions, setTipoOptions] = useState<string[]>([]);
+  
+  const [filters, setFilters] = useState<FilterState>({
+    status: '',
+    sentimento_cliente: '',
+    tipo_importacao: '',
+    responsavel: '',
+    dataInicio: '',
+    dataFim: '',
+  });
 
   const totalPaginas = Math.ceil(calls.length / tamanhoPagina);
 
   useEffect(() => {
     fetchChamados();
+
+    // Close dropdown when clicking outside
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setShowFilterDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
+
+  // Extrair opções únicas dos dados carregados
+  useEffect(() => {
+    if (allCalls.length > 0) {
+      // Extrair valores únicos para status
+      const uniqueStatus = Array.from(new Set(
+        allCalls.map(call => call.status).filter(Boolean)
+      )).sort();
+      setStatusOptions(uniqueStatus);
+      
+      // Extrair valores únicos para sentimento
+      const uniqueSentimentos = Array.from(new Set(
+        allCalls.map(call => call.sentimento_cliente).filter(Boolean)
+      )).sort();
+      setSentimentoOptions(uniqueSentimentos);
+      
+      // Extrair valores únicos para tipo
+      const uniqueTipos = Array.from(new Set(
+        allCalls.map(call => call.tipo_importacao).filter(Boolean)
+      )).sort();
+      setTipoOptions(uniqueTipos);
+    }
+  }, [allCalls]);
 
   const fetchChamados = async () => {
     setIsLoading(true);
@@ -59,26 +118,52 @@ const ListaChamado = () => {
     }
   };
 
-  const handleFilter = async (filters: any) => {
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFilters(prevFilters => ({
+      ...prevFilters,
+      [name]: value
+    }));
+  };
+
+  const applyFilters = () => {
+    handleFilter(filters);
+    setShowFilterDropdown(false);
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      status: '',
+      sentimento_cliente: '',
+      tipo_importacao: '',
+      responsavel: '',
+      dataInicio: '',
+      dataFim: '',
+    });
+    setCalls(allCalls);
+    setShowFilterDropdown(false);
+  };
+
+  const handleFilter = async (filters: FilterState) => {
     setIsLoading(true);
     try {
       let filteredData: Chamado[] = [...allCalls];
 
       if (filters.status) {
         filteredData = filteredData.filter(chamado =>
-          chamado.status?.toLowerCase().includes(filters.status.toLowerCase())
+          chamado.status?.toLowerCase() === filters.status.toLowerCase()
         );
       }
 
       if (filters.sentimento_cliente) {
         filteredData = filteredData.filter(chamado =>
-          chamado.sentimento_cliente?.toLowerCase().includes(filters.sentimento_cliente.toLowerCase())
+          chamado.sentimento_cliente?.toLowerCase() === filters.sentimento_cliente.toLowerCase()
         );
       }
 
       if (filters.tipo_importacao) {
         filteredData = filteredData.filter(chamado =>
-          chamado.tipo_importacao?.toLowerCase().includes(filters.tipo_importacao.toLowerCase())
+          chamado.tipo_importacao?.toLowerCase() === filters.tipo_importacao.toLowerCase()
         );
       }
 
@@ -154,7 +239,7 @@ const ListaChamado = () => {
 
       {/* Main container */}
       <div className="container mx-auto px-4 py-6">
-        {/* Search bar */}
+        {/* Search bar and Filter button */}
         <div className="flex items-center mb-6">
           <div className="bg-white rounded-md flex items-center p-2 shadow-sm flex-grow mr-2">
             <input
@@ -176,24 +261,124 @@ const ListaChamado = () => {
             </button>
           </div>
 
-          {/* View mode toggle */}
-          <div className="flex">
+          {/* Filter Dropdown */}
+          <div className="relative" ref={filterRef}>
             <button 
-              onClick={() => setViewMode('list')}
-              className={`p-2 ${viewMode === 'list' ? 'bg-gray-800 text-white' : 'bg-gray-200'} rounded-l`}
+              onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+              className="p-2 bg-gray-200 hover:bg-gray-300 rounded flex items-center"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
               </svg>
+              Filtros
             </button>
-            <button 
-              onClick={() => setViewMode('grid')}
-              className={`p-2 ${viewMode === 'grid' ? 'bg-gray-800 text-white' : 'bg-gray-200'} rounded-r`}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-              </svg>
-            </button>
+            
+            {showFilterDropdown && (
+              <div className="absolute right-0 mt-2 bg-white rounded-md shadow-lg w-64 z-10 p-4" onClick={(e) => e.stopPropagation()}>
+                <h3 className="font-semibold text-gray-800 mb-3">Filtrar por:</h3>
+                
+                {/* Status Select */}
+                <div className="mb-3">
+                  <label className="block text-sm text-gray-600 mb-1">Status:</label>
+                  <select
+                    name="status"
+                    value={filters.status}
+                    onChange={handleFilterChange}
+                    className="w-full p-2 border rounded"
+                  >
+                    <option value="">Todos os status</option>
+                    {statusOptions.map((option, index) => (
+                      <option key={index} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                {/* Sentimento Select */}
+                <div className="mb-3">
+                  <label className="block text-sm text-gray-600 mb-1">Sentimento:</label>
+                  <select
+                    name="sentimento_cliente"
+                    value={filters.sentimento_cliente}
+                    onChange={handleFilterChange}
+                    className="w-full p-2 border rounded"
+                  >
+                    <option value="">Todos os sentimentos</option>
+                    {sentimentoOptions.map((option, index) => (
+                      <option key={index} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                {/* Tipo Select */}
+                <div className="mb-3">
+                  <label className="block text-sm text-gray-600 mb-1">Tipo:</label>
+                  <select
+                    name="tipo_importacao"
+                    value={filters.tipo_importacao}
+                    onChange={handleFilterChange}
+                    className="w-full p-2 border rounded"
+                  >
+                    <option value="">Todos os tipos</option>
+                    {tipoOptions.map((option, index) => (
+                      <option key={index} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                {/* Responsável Input (mantido como texto) */}
+                <div className="mb-3">
+                  <label className="block text-sm text-gray-600 mb-1">Responsável:</label>
+                  <input
+                    type="text"
+                    name="responsavel"
+                    value={filters.responsavel}
+                    onChange={handleFilterChange}
+                    className="w-full p-2 border rounded"
+                    placeholder="Digite o responsável"
+                  />
+                </div>
+                
+                {/* Data Início */}
+                <div className="mb-3">
+                  <label className="block text-sm text-gray-600 mb-1">Data Início:</label>
+                  <input
+                    type="date"
+                    name="dataInicio"
+                    value={filters.dataInicio}
+                    onChange={handleFilterChange}
+                    className="w-full p-2 border rounded"
+                  />
+                </div>
+                
+                {/* Data Fim */}
+                <div className="mb-4">
+                  <label className="block text-sm text-gray-600 mb-1">Data Fim:</label>
+                  <input
+                    type="date"
+                    name="dataFim"
+                    value={filters.dataFim}
+                    onChange={handleFilterChange}
+                    className="w-full p-2 border rounded"
+                  />
+                </div>
+                
+                {/* Botões de ação */}
+                <div className="flex justify-between">
+                  <button 
+                    onClick={clearFilters}
+                    className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded"
+                  >
+                    Limpar
+                  </button>
+                  <button 
+                    onClick={applyFilters}
+                    className="px-3 py-1 bg-blue-600 text-white hover:bg-blue-700 rounded"
+                  >
+                    Aplicar
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

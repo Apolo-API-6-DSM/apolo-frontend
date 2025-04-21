@@ -87,8 +87,6 @@ const CardChamados: React.FC<CardChamadosProps> = ({ chamado }) => {
       {/* Título */}
       <div className="text-center font-medium text-lg">{chamado.titulo}</div>
 
-      {/* Rodapé */}
-      <div className="text-right text-xs text-gray-400 mt-2">Jira</div>
     </div>
   );
 };
