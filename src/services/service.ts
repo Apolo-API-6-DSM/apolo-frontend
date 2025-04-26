@@ -78,3 +78,39 @@ export const fetchTicketById = async (id: string) => {
     };
   }
 };
+
+
+export interface Chamado {
+  id: number;
+  status: string;
+  sentimento_cliente: string;
+  responsavel: string;
+  tipo_importacao: string;
+  data_abertura: string;
+  ultima_atualizacao: string;
+  titulo?: string;
+  id_importado?: string;
+  tipo_documento?: string;
+}
+// Utility function to format status
+export const formatStatus = (status: string): string => {
+  if (!status) return 'Não definido';
+  
+  // Formatação para primeira letra maiúscula
+  let formattedStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+  
+  // Casos específicos
+  if (formattedStatus.toLowerCase().includes('cancelado')) {
+    formattedStatus = 'Cancelado';
+  }
+  
+  if (formattedStatus.toLowerCase().includes('concluido')) {
+    formattedStatus = 'Concluído';
+  }
+  
+  if (formattedStatus.toLowerCase().includes('concluída')) {
+    formattedStatus = 'Concluído';
+  }
+  
+  return formattedStatus;
+};
