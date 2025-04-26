@@ -1,43 +1,35 @@
 "use client";
+
 import React from "react";
-import { ApexOptions } from "apexcharts";
-import dynamic from "next/dynamic";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 
-const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
+type ChartDataProps = {
+  data: { name: string; value: number }[];
+};
 
-export default function PieChartTwo() {
-  const options: ApexOptions = {
-    chart: {
-      type: 'pie',
-    },
-    labels: ['Reclamaçao', 'Pedido de Suporte', 'Dúvida'],
-    colors: ['#FF6384', '#36A2EB', '#FFCE56'],
-    legend: {
-      position: 'bottom'
-    },
-    responsive: [{
-      breakpoint: 480,
-      options: {
-        chart: {
-          width: 200
-        },
-        legend: {
-          position: 'bottom'
-        }
-      }
-    }]
-  };
+const COLORS = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444", "#3B82F6"];
 
-  const series = [10, 80, 10];
-
+export default function PieChartOne({ data }: ChartDataProps) {
   return (
-    <div>
-      <ReactApexChart 
-        options={options} 
-        series={series} 
-        type="pie" 
-        height={300} 
-      />
+    <div className="w-full h-72">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Tooltip />
+          <Legend verticalAlign="bottom" height={36} /> {/* Adiciona a legenda na parte inferior */}
+          <Pie
+            data={data}
+            dataKey="value"
+            nameKey="name"
+            outerRadius={100}
+            innerRadius={60}
+            paddingAngle={5}
+          >
+            {data.map((_, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+        </PieChart>
+      </ResponsiveContainer>
     </div>
   );
 }

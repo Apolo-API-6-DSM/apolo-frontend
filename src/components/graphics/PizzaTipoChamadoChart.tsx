@@ -6,7 +6,7 @@ const dataTipo = [
   { name: "Dúvida", value: 10 },
 ];
 
-const COLORS_TIPO = ["#f87171", "#60a5fa", "#a78bfa"];
+const COLORS_TIPO = ["#f87171", "#60a5fa", "#FFBF00"];
 
 export function PizzaTipoChamadoChart() {
   return (
