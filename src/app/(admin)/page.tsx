@@ -88,7 +88,7 @@ export default function Ecommerce() {
             <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800">
               <div className="space-y-4">
                 {ultimosChamados.slice(0, 5).map((chamado) => (
-                  <CardHome key={chamado.id} chamado={chamado} />
+                  <CardHome key={chamado.id_importado} chamado={chamado} />
                 ))}
               </div>
             </div>

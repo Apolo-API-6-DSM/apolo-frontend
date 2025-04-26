@@ -55,7 +55,7 @@ const CardHome: React.FC<CardHomeProps> = ({ chamado }) => {
   const getIconColor = () => 'text-gray-600 dark:text-gray-400';
 
   const handleCardClick = () => {
-    router.push(`/chamados/${chamado.id}`);
+    router.push(`/chamados/${chamado.id_importado}`);
   };
 
   return (
