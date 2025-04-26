@@ -6,10 +6,12 @@ const api = axios.create({
 
 export const importJiraCSV = async (
   file: File, 
+  fileName: string,
   onProgress?: (progress: number, phase: 'upload' | 'processing') => void
 ) => {
   const formData = new FormData();
   formData.append('file', file);
+  formData.append('fileName', fileName);
 
   try {
     const uploadResponse = await api.post('/importacao/jira', formData, {

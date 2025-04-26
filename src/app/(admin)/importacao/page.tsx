@@ -11,6 +11,7 @@ export default function ImportacaoPage() {
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [selectedSource, setSelectedSource] = useState('jira');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileName, setFileName] = useState('');
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
@@ -18,6 +19,10 @@ export default function ImportacaoPage() {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const handleFileNameChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setFileName(e.target.value);
   };
 
   const handleFileUpload = async (file: File) => {
@@ -28,7 +33,7 @@ export default function ImportacaoPage() {
     setSelectedFile(file);
 
     try {
-      const result = await importJiraCSV(file, (progress, phase) => {
+      const result = await importJiraCSV(file, fileName, (progress, phase) => {
         setUploadProgress(progress);
         setUploadPhase(phase);
       });
@@ -115,6 +120,19 @@ export default function ImportacaoPage() {
             <option value="jira">Jira</option>
             <option value="alternativo">Alternativo</option>
           </select>
+
+          <label htmlFor="file-name" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+            Digite o nome do arquivo que você está importando
+          </label>
+          <input
+            id="file-name"
+            type="text"
+            value={fileName}
+            onChange={handleFileNameChange}
+            placeholder="Ex: Importação Jira 2024"
+            className="w-full p-2 border border-gray-300 rounded-lg dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+            required
+          />
         </div>
         
         <div
