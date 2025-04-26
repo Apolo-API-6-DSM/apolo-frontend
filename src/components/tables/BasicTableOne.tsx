@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -7,70 +9,55 @@ import {
   TableRow,
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
+import { fetchArquivosInfo } from "@/services/service";
+import { useRouter } from "next/navigation"; // Alterado para next/navigation
+import { ArrowRight } from "lucide-react";
 
-interface Importacao {
-  id: number;
-  tipoArquivo: "Jira" | "Porto";
-  nomeArquivo: string;
-  dataImportacao: string;
-  status: "Processando" | "Processado" | "Erro ao processar";
-  quantidadeDados: number;
+interface ArquivoInfo {
+  "Tipo de Arquivo": string;
+  "Nome de Arquivo": string;
+  "Data da Importação": string;
+  "Status": string;
+  "Quantidade de Dados": number;
+  "nomeArquivoId"?: number;
 }
 
-const importacoesData: Importacao[] = [
-  {
-    id: 1,
-    tipoArquivo: "Jira",
-    nomeArquivo: "Jira completo ano 2021",
-    dataImportacao: "2023-10-15T14:30:00",
-    status: "Processado",
-    quantidadeDados: 1000,
-  },
-  {
-    id: 2,
-    tipoArquivo: "Porto",
-    nomeArquivo: "Porto completo ano 2021",
-    dataImportacao: "2023-10-16T09:15:00",
-    status: "Processando",
-    quantidadeDados: 500,
-  },
-  {
-    id: 3,
-    tipoArquivo: "Jira",
-    nomeArquivo: "Jira completo ano 2022",
-    dataImportacao: "2023-10-17T16:45:00",
-    status: "Erro ao processar",
-    quantidadeDados: 1000,
-  },
-  {
-    id: 4,
-    tipoArquivo: "Porto",
-    nomeArquivo: "Porto completo ano 2022",
-    dataImportacao: "2023-10-18T11:20:00",
-    status: "Processado",
-    quantidadeDados: 500,
-  },
-  {
-    id: 5,
-    tipoArquivo: "Jira",
-    nomeArquivo: "Jira completo ano 2023",
-    dataImportacao: "2023-10-19T13:10:00",
-    status: "Processando",
-    quantidadeDados: 1000,
-  },
-];
-
 export default function BasicTableOne() {
-  const formatarData = (dataISO: string) => {
-    const data = new Date(dataISO);
-    return data.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const [arquivos, setArquivos] = useState<ArquivoInfo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const carregarArquivos = async () => {
+      const { success, data, error } = await fetchArquivosInfo();
+      
+      if (success) {
+        setArquivos(data);
+      } else {
+        setError(error);
+      }
+      setLoading(false);
+    };
+
+    carregarArquivos();
+  }, []);
+
+  const handleVerChamados = (nomeArquivoId: number | undefined) => {
+    if (!nomeArquivoId) {
+      console.error('ID do arquivo não está disponível');
+      return;
+    }
+    router.push(`/chamados?nomeArquivoId=${nomeArquivoId}`);
   };
+
+  if (loading) {
+    return <div>Carregando...</div>;
+  }
+
+  if (error) {
+    return <div>Erro: {error}</div>;
+  }
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -109,38 +96,61 @@ export default function BasicTableOne() {
               >
                 Quantidade de Dados
               </TableCell>
+              <TableCell
+                isHeader
+                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
+                Ações
+              </TableCell>
             </TableRow>
           </TableHeader>
 
           {/* Table Body */}
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {importacoesData.map((importacao) => (
-              <TableRow key={importacao.id}>
+            {arquivos.map((arquivo, index) => (
+              <TableRow key={index}>
                 <TableCell className="px-5 py-4 sm:px-6 text-start text-theme-sm dark:text-white/90">
-                  {importacao.tipoArquivo}
+                  {arquivo["Tipo de Arquivo"]}
                 </TableCell>
                 <TableCell className="px-5 py-4 sm:px-6 text-start text-theme-sm dark:text-white/90">
-                  {importacao.nomeArquivo}
+                  {arquivo["Nome de Arquivo"]}
                 </TableCell>
                 <TableCell className="px-5 py-4 sm:px-6 text-start text-theme-sm dark:text-gray-400">
-                  {formatarData(importacao.dataImportacao)}
+                  {arquivo["Data da Importação"]}
                 </TableCell>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <Badge
                     size="sm"
                     color={
-                      importacao.status === "Processado"
+                      arquivo["Status"] === "CONCLUIDO"
                         ? "success"
-                        : importacao.status === "Processando"
+                        : arquivo["Status"] === "PROCESSANDO"
                         ? "default"
                         : "error"
                     }
                   >
-                    {importacao.status}
+                    {arquivo["Status"]}
                   </Badge>
                 </TableCell>
                 <TableCell className="px-5 py-4 sm:px-6 text-start text-theme-sm dark:text-gray-400">
-                  {importacao.quantidadeDados.toLocaleString('pt-BR')}
+                  {arquivo["Quantidade de Dados"].toLocaleString('pt-BR')}
+                </TableCell>
+                <TableCell className="px-5 py-4 sm:px-6 text-start">
+                <button 
+                  onClick={() => {
+                    if (arquivo.nomeArquivoId !== undefined) {
+                      handleVerChamados(arquivo.nomeArquivoId);
+                    }
+                  }}
+                  className={`flex items-center ${
+                    arquivo.nomeArquivoId !== undefined
+                      ? 'text-blue-500 hover:text-blue-700 cursor-pointer'
+                      : 'text-gray-400 cursor-not-allowed'
+                  }`}
+                  disabled={arquivo.nomeArquivoId === undefined}
+                >
+                  Ver chamados <ArrowRight className="ml-1 h-4 w-4" />
+                </button>
                 </TableCell>
               </TableRow>
             ))}

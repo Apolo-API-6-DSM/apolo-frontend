@@ -5,11 +5,12 @@ import CardChamados from '@/components/chamados/cardChamados/CardChamados';
 import Filtragem from '@/components/chamados/filtragem/Filtragem';
 import Filtros from '@/components/chamados/filtragem/Filtragem';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useModal } from '@/hooks/useModal'; // Importe o hook useModal
 import { Modal } from '@/components/ui/modal'; // Importe o componente Modal
 import Button from '@/components/ui/button/Button'; // Importe o componente Button (se estiver usando)
 import { ListBulletIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
+import { fetchTicketByNomeArquivoId, fetchTickets } from '@/services/service';
 
 
 // Atualizada interface para corresponder ao seu modelo Prisma
@@ -41,6 +42,9 @@ const tamanhoPagina = 5; // Quantidade de chamados por página
 const API_BASE_URL = 'http://localhost:3003';
 
 const ListaChamado = () => {
+  const searchParams = useSearchParams();
+  const nomeArquivoId = searchParams.get('nomeArquivoId');
+  
     const [filterValues, setFilterValues] = useState<FilterState>({ // Estado dentro do componente
       status: '',
       dataInicio: '',
@@ -63,30 +67,41 @@ const ListaChamado = () => {
   const { isOpen: isFilterModalOpen, openModal: openFilterModal, closeModal: closeFilterModal } = useModal(false);
 
   useEffect(() => {
+    console.log('nomeArquivoId:', nomeArquivoId);
     fetchChamados();
-  }, []);
+  }, [nomeArquivoId]);
 
   const fetchChamados = async () => {
+    console.log('Iniciando fetchChamados, nomeArquivoId:', nomeArquivoId);
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/chamados`);
-      if (!response.ok) {
-        throw new Error('Erro ao carregar chamados');
+      let response;
+      
+      if (nomeArquivoId) {
+        // Busca chamados específicos do nome_arquivo
+        const result = await fetchTicketByNomeArquivoId(Number(nomeArquivoId));
+        if (result.success) {
+          response = result.data;
+        } else {
+          throw new Error(result.error);
+        }
+      } else {
+        // Busca todos os chamados
+        const result = await fetchTickets();
+        if (result.success) {
+          response = result.data;
+        } else {
+          throw new Error(result.error);
+        }
       }
       
-      const data = await response.json();      
-      console.log('Dados recebidos do backend:', data);
-      if (data.length > 0) {
-        console.log('Exemplo de datas no primeiro chamado:');
-        console.log('data_abertura:', data[0].data_abertura);
-        console.log('ultima_atualizacao:', data[0].ultima_atualizacao);
-      }
-      
-      setAllCalls(data);
-      setCalls(data);
+      setAllCalls(response);
+      setCalls(response);
       setError(null);
     } catch (err) {
-      setError('Falha ao carregar os chamados. Por favor, tente novamente.');
+      setError(nomeArquivoId 
+        ? 'Falha ao carregar chamados deste arquivo. Por favor, tente novamente.'
+        : 'Falha ao carregar todos os chamados. Por favor, tente novamente.');
       console.error('Erro ao buscar chamados:', err);
     } finally {
       setIsLoading(false);
@@ -224,29 +239,42 @@ const ListaChamado = () => {
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
-      <div className="flex space-x-4 mb-6">
-      <Link
-          href="/chamados"
-          className={`px-4 py-2 rounded-lg ${pathname === '/chamados' ? 'bg-[#00163B] text-white' : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600'}`}
-        >
-          <ListBulletIcon className="h-5 w-5" aria-label="Visualização em lista" />
-        </Link>
+        {nomeArquivoId && (
+          <div className="mb-4 p-3 bg-blue-50 text-blue-800 rounded-lg dark:bg-blue-900/20 dark:text-blue-200">
+            Exibindo chamados do arquivo ID: {nomeArquivoId}
+            <button 
+              onClick={() => window.location.href = '/chamados'}
+              className="ml-2 text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-100"
+            >
+              (Ver todos os chamados)
+            </button>
+          </div>
+        )}
+
+        {/* Restante do JSX permanece igual */}
+        <div className="flex space-x-4 mb-6">
+          <Link
+            href={`/chamados/${nomeArquivoId ? `?nomeArquivoId=${nomeArquivoId}` : ''}`}
+            className={`px-4 py-2 rounded-lg ${pathname === '/chamados' ? 'bg-[#00163B] text-white' : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600'}`}
+          >
+            <ListBulletIcon className="h-5 w-5" aria-label="Visualização em lista" />
+          </Link>
         <Link
-          href="/chamados/listagem"
+          href={`/chamados/listagem${nomeArquivoId ? `?nomeArquivoId=${nomeArquivoId}` : ''}`}
           className={`px-4 py-2 rounded-lg ${pathname === '/chamados/listagem' ? 'bg-[#00163B] text-white' : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600'}`}
         >
           {/* Você pode usar o mesmo ícone de lista aqui, ou outro que represente essa seção */}
           <ListBulletIcon className="h-5 w-5" aria-label="Listagem" />
         </Link>
         <Link
-          href="/chamados/cards"
+          href={`/chamados/cards${nomeArquivoId ? `?nomeArquivoId=${nomeArquivoId}` : ''}`}
           className={`px-4 py-2 rounded-lg ${pathname === '/chamados/cards' ? 'bg-[#00163B] text-white' : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600'}`}
         >
           <Squares2X2Icon className="h-5 w-5" aria-label="Visualização em cards" />
         </Link>
         </div>
         <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
-          Lista de Chamados
+          {nomeArquivoId ? 'Chamados do Arquivo' : 'Todos os Chamados'}
         </h3>
 
           {/* Botão para abrir o modal de filtros */}
@@ -259,18 +287,23 @@ const ListaChamado = () => {
           </Button>
         </div>
 
-        {/* Modal de Filtros */}
-        <Modal isOpen={isFilterModalOpen} onClose={closeFilterModal} className="max-w-[600px] p-5 lg:p-10">
-          <h4 className="font-semibold text-gray-800 mb-7 text-title-sm dark:text-white/90">
-            Filtrar Chamados
-          </h4>
-          <Filtros onFilter={handleFilter} initialFilters={filterValues} setFilters={setFilterValues} />
-          <div className="flex items-center justify-end w-full gap-3 mt-8">
-            <Button size="sm" variant="outline" onClick={closeFilterModal}>
-              Fechar
-            </Button>
-          </div>
-        </Modal>
+          {/* Modal de Filtros */}
+          <Modal isOpen={isFilterModalOpen} onClose={closeFilterModal} className="max-w-[600px] p-5 lg:p-10">
+            <h4 className="font-semibold text-gray-800 mb-7 text-title-sm dark:text-white/90">
+              Filtrar Chamados
+            </h4>
+            <Filtros 
+              onFilter={handleFilter} 
+              initialFilters={filterValues} 
+              setFilters={setFilterValues}
+              hasNomeArquivoId={!!nomeArquivoId} // Passa true se estiver filtrado por arquivo
+            />
+            <div className="flex items-center justify-end w-full gap-3 mt-8">
+              <Button size="sm" variant="outline" onClick={closeFilterModal}>
+                Fechar
+              </Button>
+            </div>
+          </Modal>
 
             {isLoading ? (
               <div className="text-center py-8">

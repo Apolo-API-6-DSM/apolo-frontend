@@ -81,6 +81,40 @@ export const fetchTicketById = async (id: string) => {
   }
 };
 
+export const fetchTicketByNomeArquivoId = async (id: number) => {
+  console.log(`Buscando chamados do nome arquivo id ${id}...`);
+  try {
+    const response = await api.get(`/chamados/nome_arquivo/${id}`);
+    console.log("Resposta da API:", response.data);
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error: any) {
+    console.error("Erro na requisição:", error);
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Erro ao buscar o chamados',
+    };
+  }
+};
+
+export const fetchArquivosInfo = async () => {
+  try {
+    const response = await api.get('/chamados/arquivos-info');
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Erro ao buscar informações de arquivos',
+    };
+  }
+};
+
+
 
 export interface Chamado {
   id: number;

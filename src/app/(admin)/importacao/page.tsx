@@ -12,6 +12,34 @@ export default function ImportacaoPage() {
   const [selectedSource, setSelectedSource] = useState('jira');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState('');
+  const [errors, setErrors] = useState({
+    fileName: '',
+    file: ''
+  });
+
+  const validateForm = () => {
+    const newErrors = {
+      fileName: '',
+      file: ''
+    };
+    let isValid = true;
+
+    if (!fileName.trim()) {
+      newErrors.fileName = 'O nome do arquivo é obrigatório';
+      isValid = false;
+    }
+
+    if (!selectedFile) {
+      newErrors.file = 'Selecione um arquivo para importar';
+      isValid = false;
+    } else if (!(selectedFile.type === 'text/csv' || selectedFile.name.endsWith('.csv'))) {
+      newErrors.file = 'O arquivo deve ser do tipo CSV';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
@@ -23,17 +51,23 @@ export default function ImportacaoPage() {
 
   const handleFileNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFileName(e.target.value);
+    if (errors.fileName) {
+      setErrors(prev => ({ ...prev, fileName: '' }));
+    }
   };
 
-  const handleFileUpload = async (file: File) => {
+  const handleFileUpload = async () => {
+    if (!validateForm()) return;
+    
+    if (!selectedFile) return;
+
     setIsUploading(true);
     setUploadProgress(0);
     setUploadPhase('upload');
     setMessage(null);
-    setSelectedFile(file);
 
     try {
-      const result = await importJiraCSV(file, fileName, (progress, phase) => {
+      const result = await importJiraCSV(selectedFile, fileName, (progress, phase) => {
         setUploadProgress(progress);
         setUploadPhase(phase);
       });
@@ -80,9 +114,9 @@ export default function ImportacaoPage() {
     const file = e.dataTransfer.files[0];
     if (file && (file.type === 'text/csv' || file.name.endsWith('.csv'))) {
       setSelectedFile(file);
-      handleFileUpload(file);
+      setErrors(prev => ({ ...prev, file: '' }));
     } else {
-      setMessage({ text: 'Por favor, selecione um arquivo CSV válido', type: 'error' });
+      setErrors(prev => ({ ...prev, file: 'O arquivo deve ser do tipo CSV' }));
     }
   }, []);
 
@@ -90,7 +124,10 @@ export default function ImportacaoPage() {
     const file = e.target.files?.[0];
     if (file && (file.type === 'text/csv' || file.name.endsWith('.csv'))) {
       setSelectedFile(file);
-      handleFileUpload(file);
+      setErrors(prev => ({ ...prev, file: '' }));
+    } else {
+      setSelectedFile(null);
+      setErrors(prev => ({ ...prev, file: 'O arquivo deve ser do tipo CSV' }));
     }
   };
 
@@ -121,23 +158,31 @@ export default function ImportacaoPage() {
             <option value="alternativo">Alternativo</option>
           </select>
 
-          <label htmlFor="file-name" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-            Digite o nome do arquivo que você está importando
-          </label>
-          <input
-            id="file-name"
-            type="text"
-            value={fileName}
-            onChange={handleFileNameChange}
-            placeholder="Ex: Importação Jira 2024"
-            className="w-full p-2 border border-gray-300 rounded-lg dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
-            required
-          />
+          <div className="mt-4">
+            <label htmlFor="file-name" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              Digite o nome do arquivo que você está importando *
+            </label>
+            <input
+              id="file-name"
+              type="text"
+              value={fileName}
+              onChange={handleFileNameChange}
+              placeholder="Ex: Importação Jira 2024"
+              className={`w-full p-2 border rounded-lg dark:bg-gray-800 dark:text-gray-300 ${
+                errors.fileName ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'
+              }`}
+              required
+            />
+            {errors.fileName && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.fileName}</p>
+            )}
+          </div>
         </div>
         
         <div
           className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-            isDragging ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-700'
+            isDragging ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 
+            errors.file ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'
           }`}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
@@ -146,10 +191,25 @@ export default function ImportacaoPage() {
         >
           <div className="flex flex-col items-center justify-center space-y-3">
             <UploadIcon className="h-12 w-12 text-gray-400 dark:text-gray-500" />
-            <p className="text-gray-600 dark:text-gray-400">
-              Arraste e solte seu arquivo CSV aqui
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-500">ou</p>
+            
+            {selectedFile ? (
+              <>
+                <p className="text-gray-800 dark:text-gray-200 font-medium">
+                  {selectedFile.name}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {formatFileSize(selectedFile.size)}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Arraste e solte seu arquivo CSV aqui
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-500">ou</p>
+              </>
+            )}
+            
             <label className="cursor-pointer inline-flex items-center justify-center gap-2 rounded-full border border-transparent bg-[#00163B] px-4 py-2 text-sm font-medium text-white shadow-theme-xs hover:bg-[#001e4f] dark:bg-blue-700 dark:hover:bg-blue-800">
               Selecione um arquivo
               <input
@@ -160,6 +220,30 @@ export default function ImportacaoPage() {
               />
             </label>
           </div>
+          {errors.file && (
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.file}</p>
+          )}
+        </div>
+
+        <div className="flex justify-end">
+          <button
+            onClick={handleFileUpload}
+            disabled={isUploading}
+            className={`inline-flex items-center justify-center gap-2 rounded-full border border-transparent px-4 py-2 text-sm font-medium text-white shadow-theme-xs ${
+              isUploading 
+                ? 'bg-gray-400 cursor-not-allowed dark:bg-gray-600'
+                : 'bg-[#00163B] hover:bg-[#001e4f] dark:bg-blue-700 dark:hover:bg-blue-800'
+            }`}
+          >
+            {isUploading ? (
+              <>
+                <Spinner />
+                {uploadPhase === 'upload' ? 'Enviando...' : 'Processando...'}
+              </>
+            ) : (
+              'Enviar Arquivo'
+            )}
+          </button>
         </div>
 
         {isUploading && (
@@ -230,6 +314,15 @@ function UploadIcon(props: React.SVGProps<SVGSVGElement>) {
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
       <polyline points="17 8 12 3 7 8" />
       <line x1="12" x2="12" y1="3" y2="15" />
+    </svg>
+  );
+}
+
+function Spinner() {
+  return (
+    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
     </svg>
   );
 }
