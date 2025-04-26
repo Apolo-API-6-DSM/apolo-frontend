@@ -1,10 +1,10 @@
 "use client";
 
 import type { Metadata } from "next";
-import { EcommerceMetrics } from "@/components/ecommerce/EcommerceMetrics";
-import MonthlyTarget from "@/components/ecommerce/MonthlyTarget";
-import RecentOrders from "@/components/ecommerce/RecentOrders";
-import DemographicCard from "@/components/ecommerce/DemographicCard";
+import { EcommerceMetrics } from "@/components/graphics/EcommerceMetrics";
+import MonthlyTarget from "@/components/graphics/MonthlyTarget";
+import RecentOrders from "@/components/graphics/RecentOrders";
+import DemographicCard from "@/components/graphics/DemographicCard";
 import CardHome from "@/components/chamados/cardHome/CardHome";
 import Link from "next/link";
 import DashboardCharts from "./DashboardCharts";
@@ -43,7 +43,8 @@ export default function Ecommerce() {
           throw new Error('Erro ao carregar os últimos chamados');
         }
         const data: Chamado[] = await response.json();
-        setUltimosChamados(data);
+        const ultimosCincoChamados = data.slice(0, 5); // Garante que apenas os últimos cinco sejam usados
+        setUltimosChamados(ultimosCincoChamados);
         setError(null);
       } catch (err) {
         setError('Falha ao carregar os últimos chamados. Por favor, tente novamente.');
@@ -86,7 +87,7 @@ export default function Ecommerce() {
             {/* Área de scroll - SOLUÇÃO DEFINITIVA */}
             <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800">
               <div className="space-y-4">
-                {ultimosChamados.map((chamado) => (
+                {ultimosChamados.slice(0, 5).map((chamado) => (
                   <CardHome key={chamado.id} chamado={chamado} />
                 ))}
               </div>

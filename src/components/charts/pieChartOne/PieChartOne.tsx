@@ -1,43 +1,48 @@
 "use client";
+
 import React from "react";
-import { ApexOptions } from "apexcharts";
-import dynamic from "next/dynamic";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 
-const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
+type ChartDataProps = {
+  data: { name: string; value: number }[];
+};
 
-export default function PieChartOne() {
-  const options: ApexOptions = {
-    chart: {
-      type: 'pie',
-    },
-    labels: ['Positivo', 'Negativo', 'Neutro'],
-    colors: ['#465FFF', '#6C5CE7', '#00B894'],
-    legend: {
-      position: 'bottom'
-    },
-    responsive: [{
-      breakpoint: 480,
-      options: {
-        chart: {
-          width: 200
-        },
-        legend: {
-          position: 'bottom'
-        }
-      }
-    }]
-  };
+const COLORS = {
+  positivo: "#10B981", // Verde
+  neutro: "#3B82F6",   // Azul
+  negativo: "#EF4444", // Vermelho
+};
 
-  const series = [20, 10, 70];
-
+export default function PieChartOne({ data }: ChartDataProps) {
   return (
-    <div>
-      <ReactApexChart 
-        options={options} 
-        series={series} 
-        type="pie" 
-        height={300} 
-      />
+    <div className="w-full h-72">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Tooltip />
+          <Legend verticalAlign="bottom" height={36} />
+          <Pie
+            data={data}
+            dataKey="value"
+            nameKey="name"
+            outerRadius={100}
+            innerRadius={60}
+            paddingAngle={5}
+          >
+            {data.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={
+                  entry.name.toLowerCase() === "positivo"
+                    ? COLORS.positivo
+                    : entry.name.toLowerCase() === "neutro"
+                    ? COLORS.neutro
+                    : COLORS.negativo
+                }
+              />
+            ))}
+          </Pie>
+        </PieChart>
+      </ResponsiveContainer>
     </div>
   );
 }
