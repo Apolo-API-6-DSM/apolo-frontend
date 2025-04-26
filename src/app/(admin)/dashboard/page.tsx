@@ -2,19 +2,21 @@
 "use client";
 
 import type { Metadata } from "next";
-import { EcommerceMetrics } from "@/components/ecommerce/EcommerceMetrics";
+import { EcommerceMetrics } from "@/components/graphics/EcommerceMetrics";
 import React from "react";
-import MonthlyTarget from "@/components/ecommerce/MonthlyTarget";
-import MonthlySalesChart from "@/components/ecommerce/MonthlySalesChart";
-import StatisticsChart from "@/components/ecommerce/StatisticsChart";
-import RecentOrders from "@/components/ecommerce/RecentOrders";
-import DemographicCard from "@/components/ecommerce/DemographicCard";
-import { DashboardDataProvider } from "@/components/ecommerce/DataProvider";
-import PizzaEmocoesChart from "@/components/ecommerce/PizzaEmocoesChart";
-import { PizzaTipoChamadoChart } from "@/components/ecommerce/PizzaTipoChamadoChart";
-import ResponsaveisAtivosCard from "@/components/ecommerce/ResponsaveisAtivosChart";
-import TempoMedioFechamentoCard from "@/components/ecommerce/TempoMedioFechamentoChart";
-import ChamadasAbertasCard from "@/components/ecommerce/ChamadasAbertasCard";
+import MonthlyTarget from "@/components/graphics/MonthlyTarget";
+import MonthlySalesChart from "@/components/graphics/MonthlySalesChart";
+import StatisticsChart from "@/components/graphics/StatisticsChart";
+import RecentOrders from "@/components/graphics/RecentOrders";
+import DemographicCard from "@/components/graphics/DemographicCard";
+import { DashboardDataProvider } from "@/components/graphics/DataProvider";
+import PizzaEmocoesChart from "@/components/graphics/PizzaEmocoesChart";
+import { PizzaTipoChamadoChart } from "@/components/graphics/PizzaTipoChamadoChart";
+import ResponsaveisAtivosCard from "@/components/graphics/ResponsaveisAtivosChart";
+import TempoMedioFechamentoCard from "@/components/graphics/TempoMedioFechamentoChart";
+import ChamadasAbertasCard from "@/components/graphics/ChamadasAbertasCard";
+import EmocaoPorDiaChart from "@/components/graphics/EmocaoPorDiaChart";
+import ChamadoPorDiaChart from "@/components/graphics/ChamadoPorDiaChart";
 
 // Metadata needs to be in a separate file for App Router in client components
 export default function Dashboard() {
@@ -52,6 +54,11 @@ export default function Dashboard() {
         <TempoMedioFechamentoCard />
         <ChamadasAbertasCard />
         <ResponsaveisAtivosCard />
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
+        <EmocaoPorDiaChart />
+        <ChamadoPorDiaChart />
       </div>
 
     </DashboardDataProvider>

@@ -1,10 +1,10 @@
 "use client";
 
 import type { Metadata } from "next";
-import { EcommerceMetrics } from "@/components/ecommerce/EcommerceMetrics";
-import MonthlyTarget from "@/components/ecommerce/MonthlyTarget";
-import RecentOrders from "@/components/ecommerce/RecentOrders";
-import DemographicCard from "@/components/ecommerce/DemographicCard";
+import { EcommerceMetrics } from "@/components/graphics/EcommerceMetrics";
+import MonthlyTarget from "@/components/graphics/MonthlyTarget";
+import RecentOrders from "@/components/graphics/RecentOrders";
+import DemographicCard from "@/components/graphics/DemographicCard";
 import CardHome from "@/components/chamados/cardHome/CardHome";
 import Link from "next/link";
 import DashboardCharts from "./DashboardCharts";
