@@ -3,43 +3,72 @@
 import React from "react";
 import dynamic from "next/dynamic";
 
-// Import dinâmico dos gráficos
-const BarChartOne = dynamic(() => import("@/components/charts/bar/BarChartOne"), {
-  ssr: false,
-  loading: () => <div className="h-[180px] w-full bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse"></div>
-});
+// Tipagem dos dados para os gráficos
+type ChartDataItem = { name: string; value: number };
+type ChartDataProps = { data: ChartDataItem[] };
 
-const PieChartOne = dynamic(() => import("@/components/charts/pieChartOne/PieChartOne"), {
-  ssr: false,
-  loading: () => <div className="h-[300px] w-full bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse"></div>
-});
+// Helper para carregar componentes de gráfico dinamicamente
+const loadChart = (path: string) =>
+  dynamic<ChartDataProps>(() => import(`@/components/charts/${path}`), {
+    ssr: false,
+    loading: () => (
+      <div className="h-[300px] w-full bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
+    ),
+  });
 
-const PieChartTwo = dynamic(() => import("@/components/charts/pieChartTwo/PieChartTwo"), {
-  ssr: false,
-  loading: () => <div className="h-[300px] w-full bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse"></div>
-});
+// Carregamento dinâmico dos gráficos
+const BarChartOne = loadChart("bar/BarChartOne");
+const PieChartOne = loadChart("pieChartOne/PieChartOne");
+const PieChartTwo = loadChart("pieChartTwo/PieChartTwo");
 
 export default function DashboardCharts() {
+  // Dados mockados para os gráficos
+  const barData: ChartDataItem[] = [
+    { name: "Seg", value: 30 },
+    { name: "Ter", value: 45 },
+    { name: "Qua", value: 28 },
+    { name: "Qui", value: 55 },
+    { name: "Sex", value: 40 },
+  ];
+
+  const pieDataOne: ChartDataItem[] = [
+    { name: "Positivo", value: 60 },
+    { name: "Neutro", value: 25 },
+    { name: "Negativo", value: 15 },
+  ];
+
+  const pieDataTwo: ChartDataItem[] = [
+    { name: "Aberto", value: 70 },
+    { name: "Fechado", value: 30 },
+  ];
+
   return (
-    <>
-      {/* Gráfico de barras ocupando a largura total */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] mb-4 md:mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Teste</h3>
-        <BarChartOne />
-      </div>
+    <section className="space-y-6">
+      {/* Gráfico de Barras */}
+      <ChartCard title="Chamados por Dia">
+        <BarChartOne data={barData} />
+      </ChartCard>
 
-      {/* Gráficos de pizza lado a lado */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Sentimentos</h3>
-          <PieChartOne />
-        </div>
+      {/* Gráficos de Pizza */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <ChartCard title="Sentimentos">
+          <PieChartOne data={pieDataOne} />
+        </ChartCard>
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Teste</h3>
-          <PieChartTwo />
-        </div>
+        <ChartCard title="Status dos Chamados">
+          <PieChartTwo data={pieDataTwo} />
+        </ChartCard>
       </div>
-    </>
+    </section>
+  );
+}
+
+// Componente reutilizável para cartão de gráficos
+function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+      <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">{title}</h3>
+      {children}
+    </div>
   );
 }

@@ -1,200 +1,143 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { ApexOptions } from "apexcharts";
-import dynamic from "next/dynamic";
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
-import { ptBR } from "date-fns/locale";
 
-const ReactApexChart = dynamic(() => import("react-apexcharts"), {
-  ssr: false,
-});
+import React, { useState, useMemo } from "react";
+import {
+    ResponsiveContainer,
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    Tooltip,
+    Label,
+    CartesianGrid,
+    LabelList,
+} from "recharts";
 
-// Dados de vendas diárias (simulados - VOCÊ PRECISA SUBSTITUIR PELOS SEUS DADOS REAIS)
-const dailySalesData = [
-  { date: "2024-01-01", sales: 50 },
-  { date: "2024-01-01", sales: 60 },
-  { date: "2024-01-02", sales: 75 },
-  { date: "2024-01-08", sales: 40 },
-  { date: "2024-01-08", sales: 55 },
-  { date: "2024-01-15", sales: 80 },
-  { date: "2024-02-03", sales: 90 },
-  { date: "2024-03-10", sales: 100 },
-  { date: "2024-03-17", sales: 110 },
-  { date: "2024-04-01", sales: 120 },
-  { date: "2024-04-08", sales: 130 },
-  { date: "2024-05-05", sales: 140 },
-  { date: "2024-06-12", sales: 150 },
-  { date: "2024-07-19", sales: 160 },
-  { date: "2024-08-26", sales: 170 },
-  { date: "2024-09-02", sales: 180 },
-  { date: "2024-10-09", sales: 190 },
-  { date: "2024-11-16", sales: 200 },
-  { date: "2024-12-23", sales: 210 },
-];
+type ChartDataProps = {
+    data?: { name: string; quantidade: number }[];
+};
 
-export default function BarChartOne() {
-  const [period, setPeriod] = useState("month");
-  const [chartData, setChartData] = useState({
-    series: [{ name: "Sales", data: [168, 385, 201, 298, 187, 195, 291, 110, 215, 390, 280, 112] }],
-    options: { xaxis: { categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] } },
-  });
+export default function BarChartOne({ data }: ChartDataProps) {
+    const [period, setPeriod] = useState<"day" | "week" | "month" | "quarter">("day");
 
-  const processData = (data: { date: string; sales: number }[], selectedPeriod: string) => {
-    const aggregatedData: { [key: string]: number } = {};
-    const categories: string[] = [];
+    const today = new Date();
+    const currentMonth = today.getMonth() + 1;
+    const currentYear = today.getFullYear();
 
-    data.forEach((item) => {
-      const date = new Date(item.date);
-      let key: string = "";
+    const getDaysInMonth = (month: number, year: number) => {
+        return new Date(year, month, 0).getDate();
+    };
 
-      switch (selectedPeriod) {
-        case "day":
-          key = format(date, "dd/MM/yyyy", { locale: ptBR });
-          break;
-        case "week":
-          const start = startOfWeek(date, { weekStartsOn: 0 });
-          const end = endOfWeek(date, { weekStartsOn: 0 });
-          key = `${format(start, "dd/MM", { locale: ptBR })} - ${format(end, "dd/MM", { locale: ptBR })}`;
-          break;
-        case "month":
-          key = format(date, "MMM", { locale: ptBR });
-          break;
-        case "quarter":
-          const quarter = Math.floor((date.getMonth() + 3) / 3);
-          key = `T${quarter} ${date.getFullYear()}`;
-          break;
-        default:
-          key = format(date, "MMM", { locale: ptBR });
-          break;
-      }
+    // Gera dados FIXOS ao carregar (e não muda depois!)
+    const fixedData = useMemo(() => {
+        const daysInMonth = getDaysInMonth(currentMonth, currentYear);
 
-      aggregatedData[key] = (aggregatedData[key] || 0) + item.sales;
-    });
+        const random = (seed: number) => {
+            const x = Math.sin(seed) * 10000;
+            return x - Math.floor(x);
+        };
 
-    for (const key in aggregatedData) {
-      categories.push(key);
-    }
+        // Gera dados diários para todos os dias do mês
+        const dayData = Array.from({ length: daysInMonth }, (_, i) => ({
+            name: `${i + 1}`, // Garante que todos os dias (1 a daysInMonth) sejam gerados
+            quantidade: Math.floor(50 + random(i + 1) * 50),
+        }));
 
-    setChartData({
-      series: [{ name: "Sales", data: Object.values(aggregatedData) }],
-      options: { xaxis: { categories: categories } },
-    });
-  };
+        // Calcula o total de abril (ou mês atual)
+        const aprilTotal = dayData.reduce((sum, day) => sum + day.quantidade, 0);
 
-  const handlePeriodChange = (newPeriod: string) => {
-    setPeriod(newPeriod);
-  };
+        // Gera dados semanais somando os dias correspondentes
+        const weekData = Array.from({ length: 4 }, (_, i) => {
+            const startDay = i * 7;
+            const endDay = Math.min(startDay + 7, daysInMonth);
+            const quantidade = dayData
+                .slice(startDay, endDay)
+                .reduce((sum, day) => sum + day.quantidade, 0);
+            return { name: `Semana ${i + 1}`, quantidade };
+        });
 
-  useEffect(() => {
-    processData(dailySalesData, period);
-  }, [period]);
+        // Gera dados mensais com base no total de abril
+        const monthData = Array.from({ length: 12 }, (_, i) => ({
+            name: `${i + 1}`,
+            quantidade: i + 1 === currentMonth
+                ? aprilTotal
+                : Math.floor(aprilTotal + random(i + 1) * 100 - 50), // Valores próximos ao total de abril
+        }));
 
-  const options: ApexOptions = {
-    ...chartData.options, // Merge as categorias dinâmicas
-    colors: ["#465fff"],
-    chart: {
-      fontFamily: "Outfit, sans-serif",
-      type: "bar",
-      height: 180,
-      toolbar: {
-        show: false,
-      },
-    },
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: "39%",
-        borderRadius: 5,
-        borderRadiusApplication: "end",
-      },
-    },
-    dataLabels: {
-      enabled: false,
-    },
-    stroke: {
-      show: true,
-      width: 4,
-      colors: ["transparent"],
-    },
-    xaxis: {
-      axisBorder: {
-        show: false,
-      },
-      axisTicks: {
-        show: false,
-      },
-    },
-    legend: {
-      show: true,
-      position: "top",
-      horizontalAlign: "left",
-      fontFamily: "Outfit",
-    },
-    yaxis: {
-      title: {
-        text: undefined,
-      },
-    },
-    grid: {
-      yaxis: {
-        lines: {
-          show: true,
-        },
-      },
-    },
-    fill: {
-      opacity: 1,
-    },
-    tooltip: {
-      x: {
-        show: true,
-      },
-      y: {
-        formatter: (val: number) => `${val}`,
-      },
-    },
-  };
-  const series = chartData.series;
+        // Gera dados trimestrais somando os meses correspondentes
+        const quarterData = Array.from({ length: 4 }, (_, i) => {
+            const startMonth = i * 3;
+            const endMonth = startMonth + 3;
+            const quantidade = monthData
+                .slice(startMonth, endMonth)
+                .reduce((sum, month) => sum + month.quantidade, 0);
+            return { name: `Q${i + 1}`, quantidade };
+        });
 
-  return (
-    <div className="max-w-full overflow-x-auto custom-scrollbar">
-      <div className="flex gap-2 mb-4">
-        <button
-          className={`px-4 py-2 rounded-md text-sm ${
-            period === "day" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
-          }`}
-          onClick={() => handlePeriodChange("day")}
-        >
-          Dia
-        </button>
-        <button
-          className={`px-4 py-2 rounded-md text-sm ${
-            period === "week" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
-          }`}
-          onClick={() => handlePeriodChange("week")}
-        >
-          Semana
-        </button>
-        <button
-          className={`px-4 py-2 rounded-md text-sm ${
-            period === "month" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
-          }`}
-          onClick={() => handlePeriodChange("month")}
-        >
-          Mês
-        </button>
-        <button
-          className={`px-4 py-2 rounded-md text-sm ${
-            period === "quarter" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
-          }`}
-          onClick={() => handlePeriodChange("quarter")}
-        >
-          Trimestre
-        </button>
-      </div>
-      <div id="chartOne" className="min-w-[1000px]">
-        <ReactApexChart options={options} series={series} type="bar" height={180} />
-      </div>
-    </div>
-  );
+        return { day: dayData, week: weekData, month: monthData, quarter: quarterData };
+    }, [currentMonth, currentYear]);
+
+    const handlePeriodChange = (newPeriod: "day" | "week" | "month" | "quarter") => {
+        setPeriod(newPeriod);
+    };
+
+    return (
+        <div className="w-full h-[320px]">
+            <style jsx>{`
+                .recharts-legend-wrapper .recharts-legend-item {
+                    margin-top: 20px; /* Ajuste o valor da margem conforme necessário */
+                }
+            `}</style>
+            {/* Seletor de Período */}
+            <div className="flex items-center gap-2 mb-4">
+                {["day", "week", "month", "quarter"].map((p) => (
+                    <button
+                        key={p}
+                        onClick={() => handlePeriodChange(p as any)}
+                        className={`px-3 py-1 rounded-full text-sm ${
+                            period === p
+                                ? "bg-indigo-600 text-white"
+                                : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white/70"
+                        }`}
+                    >
+                        {p === "day" && "Dia"}
+                        {p === "week" && "Semana"}
+                        {p === "month" && "Mês"}
+                        {p === "quarter" && "Trimestre"}
+                    </button>
+                ))}
+            </div>
+
+            <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                    data={fixedData[period]}
+                    margin={{ top: 30, right: 30, left: 30, bottom: 40 }}
+                    barSize={30}
+                >
+                    <CartesianGrid strokeDasharray="3 3" /> {/* Adiciona linhas pontilhadas horizontais */}
+                    <XAxis dataKey="name" interval={0} style={{ fontSize: '12px' }}>
+                        <Label
+                            value={period === "day" ? `Dias de ${currentMonth}/${currentYear}` : "Período"}
+                            offset={-10}
+                            position="insideBottom"
+                        />
+                    </XAxis>
+                    <YAxis tickCount={10}> {/* Aumenta o número de divisões horizontais */}
+                        <Label
+                            value="Chamados"
+                            angle={-90}
+                            position="insideLeft"
+                            style={{ textAnchor: "middle" }}
+                            dx={10}
+                            dy={10}
+                        />
+                    </YAxis>
+                    <Tooltip />
+                    <Bar dataKey="quantidade" fill="#4F46E5">
+                        <LabelList dataKey="quantidade" position="top" style={{ fontSize: '12px', fill: '#000' }} /> {/* Adiciona os valores acima das barras */}
+                    </Bar>
+                </BarChart>
+            </ResponsiveContainer>
+        </div>
+    );
 }
