@@ -128,9 +128,9 @@ const ListaChamado = () => {
           
           // Mapeamento de status equivalentes
           const statusMap: Record<string, string[]> = {
-            'aberto': ['aberto', 'em andamento'],
+            'aberto': ['aberto', 'em andamento', 'em aberto'],
             'pendente': ['pendente', 'aguardando pelo suporte', 'itens pendentes'],
-            'concluido': ['concluido', 'concluído', 'concluída', 'resolvido', 'fechado']
+            'concluido': ['concluido', 'concluído', 'concluída', 'resolvido', 'fechado', 'cancelado']
           };
           
           // Verifica se o status do chamado corresponde ao filtro

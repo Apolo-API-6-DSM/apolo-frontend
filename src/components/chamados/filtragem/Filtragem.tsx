@@ -16,9 +16,10 @@ interface FiltrosProps {
   initialFilters: FilterState;
   setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
   hasNomeArquivoId: boolean; // Novo prop para indicar se está filtrando por nomeArquivoId
+  onClose: () => void;
 }
 
-const Filtros = ({ onFilter, initialFilters, setFilters, hasNomeArquivoId }: FiltrosProps) => {
+const Filtros = ({ onFilter, initialFilters, setFilters, hasNomeArquivoId, onClose }: FiltrosProps) => {
   const [filters, setInternalFilters] = useState(initialFilters);
 
   useEffect(() => {
@@ -40,6 +41,7 @@ const Filtros = ({ onFilter, initialFilters, setFilters, hasNomeArquivoId }: Fil
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onFilter(filters);
+    onClose();
   };
 
   const handleReset = () => {
@@ -80,8 +82,8 @@ const Filtros = ({ onFilter, initialFilters, setFilters, hasNomeArquivoId }: Fil
           >
             <option value="">Todos os status</option>
             <option value="aberto">Aberto</option>
-            <option value="pendente">Pendente</option>
             <option value="concluido">Concluído</option>
+            <option value="cancelado">Cancelado</option>
           </select>
         </div>
 
@@ -120,9 +122,9 @@ const Filtros = ({ onFilter, initialFilters, setFilters, hasNomeArquivoId }: Fil
             value={filters.sentimento_cliente}
           >
             <option value="">Todos os sentimentos</option>
-            <option value="positivo">Positivo</option>
-            <option value="neutro">Neutro</option>
-            <option value="negativo">Negativo</option>
+            <option value="Positiva">Positivo</option>
+            <option value="Neutra">Neutro</option>
+            <option value="Negativa">Negativo</option>
           </select>
         </div>
 

@@ -47,7 +47,7 @@ const navItems: NavItem[] = [
   {
     icon: <ListIcon />,
     name: "Chamados",
-    subItems: [{ name: "Todos Chamados", path: "/chamados" }],
+    subItems: [{ name: "Todos Chamados", path: "/chamados/listagem" }],
   },
   {
     icon: <UserCircleIcon />,
