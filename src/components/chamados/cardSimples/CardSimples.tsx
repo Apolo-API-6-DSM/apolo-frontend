@@ -1,6 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import React from "react";
+import { FaSmile, FaCommentDots, FaClock, FaUser } from "react-icons/fa";
 
 interface CardSimplesProps {
   chamado: {
@@ -15,7 +17,14 @@ interface CardSimplesProps {
   };
 }
 
+
 const CardSimples: React.FC<CardSimplesProps> = ({ chamado }) => {
+  const router = useRouter();
+  
+  const handleVerMais = () => {
+    router.push(`/chamados/${chamado.id}`);
+  };
+
   const formatarData = (dataISO: string | undefined) => {
     if (!dataISO) return '';
     try {
@@ -36,7 +45,7 @@ const CardSimples: React.FC<CardSimplesProps> = ({ chamado }) => {
   };
 
   return (
-    <div className="rounded-md border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.05]">
+    <div className="rounded-md hover:shadow-lg cursor-pointer border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.05]" onClick={handleVerMais}>
       <div className="flex items-center justify-between mb-2">
         <h5 className="text-lg font-semibold text-gray-800 dark:text-white/90">
           CHAMADO {chamado.id} {getSentimentoEmoji(chamado.sentimento)}

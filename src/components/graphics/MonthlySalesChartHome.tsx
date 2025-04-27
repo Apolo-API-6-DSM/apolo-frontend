@@ -97,7 +97,7 @@ export default function MonthlySalesChartHome() {
           <select 
             value={periodo}
             onChange={(e) => setPeriodo(e.target.value as Periodo)}
-            className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="mes">Mês</option>
             <option value="ano">Ano</option>
@@ -109,7 +109,7 @@ export default function MonthlySalesChartHome() {
               onChange={(date) => setDataSelecionada(date || new Date())}
               dateFormat="MM/yyyy"
               showMonthYearPicker
-              className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-28"
+              className="bg-white dark:bg-gray-700 border dark:text-white border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-28"
               popperClassName="!z-50 w-full max-w-[280px]"
               locale={ptBR}
             />
@@ -119,7 +119,7 @@ export default function MonthlySalesChartHome() {
               onChange={(date) => setDataSelecionada(date || new Date())}
               dateFormat="yyyy"
               showYearPicker
-              className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-20"
+              className="bg-white dark:bg-gray-700 border border-gray-300 dark:text-white dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-20"
               popperClassName="!z-50 w-full max-w-[280px]"
               locale={ptBR}
             />

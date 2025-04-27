@@ -176,7 +176,7 @@ const renderDatePicker = () => {
   const wrapperClasses = "flex items-center gap-6 flex-wrap";
 
   return (
-    <div className={wrapperClasses}>
+    <div className={`${wrapperClasses} dark:text-white`}>
       {periodo === 'dia' && (
         <>
           <span>Dia:</span>
@@ -184,7 +184,7 @@ const renderDatePicker = () => {
             selected={dataSelecionada}
             onChange={(date) => setDataSelecionada(date || new Date())}
             dateFormat="dd/MM/yyyy"
-            className={pickerClasses}
+            className={`${pickerClasses} dark:text-white`}
             popperClassName="!z-50 w-full max-w-[280px]"
             locale={ptBR}
           />
@@ -193,16 +193,16 @@ const renderDatePicker = () => {
 
       {periodo === 'semana' && (
         <>
-          <span>Semana começando em:</span>
+          <span className='dark:text-white'>Semana começando em:</span>
           <DatePicker
             selected={dataSelecionada}
             onChange={(date) => setDataSelecionada(date || new Date())}
             dateFormat="dd/MM/yyyy"
-            className={pickerClasses}
+            className={`${pickerClasses} dark:text-white`}
             popperClassName="!z-50 w-full max-w-[280px]"
             locale={ptBR}
           />
-          <span className="text-sm text-gray-500 dark:text-gray-400">
+          <span className="text-sm text-black dark:text-white">
             {format(dataInicio, 'dd/MM')} a {format(dataFim, 'dd/MM/yyyy')}
           </span>
         </>
@@ -216,7 +216,7 @@ const renderDatePicker = () => {
             onChange={(date) => setDataSelecionada(date || new Date())}
             dateFormat="MM/yyyy"
             showMonthYearPicker
-            className={pickerClasses}
+            className={`${pickerClasses} dark:text-white`}
             popperClassName="!z-50 w-full max-w-[280px]"
             locale={ptBR}
           />
@@ -231,11 +231,11 @@ const renderDatePicker = () => {
             onChange={(date) => setDataSelecionada(date || new Date())}
             dateFormat="MM/yyyy"
             showMonthYearPicker
-            className={pickerClasses}
+            className={`${pickerClasses} dark:text-white`}
             popperClassName="!z-50 w-full max-w-[280px]"
             locale={ptBR}
           />
-          <span className="text-sm text-gray-500 dark:text-gray-400">
+          <span className="text-sm text-black dark:text-white">
             {format(dataInicio, 'MMM/yyyy', { locale: ptBR })} a {format(dataFim, 'MMM/yyyy', { locale: ptBR })}
           </span>
         </>
@@ -287,7 +287,7 @@ const renderDatePicker = () => {
           <select 
             value={periodo}
             onChange={(e) => handlePeriodoChange(e.target.value as Periodo)}
-            className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="dia">Dia</option>
             <option value="semana">Semana</option>
