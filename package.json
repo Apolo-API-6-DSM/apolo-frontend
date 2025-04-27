@@ -25,6 +25,7 @@
     "axios": "^1.8.4",
     "date-fns": "^4.1.0",
     "flatpickr": "^4.6.13",
+    "lucide-react": "^0.503.0",
     "next": "15.2.3",
     "react": "^19.0.0",
     "react-apexcharts": "^1.7.0",

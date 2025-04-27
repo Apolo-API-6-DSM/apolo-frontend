@@ -2,7 +2,8 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import DetalhesChamado from "@/components/chamados/detalhes/DetalhesChamados";
+import DetalhesChamadoJira from "@/components/chamados/detalhes/DetalhesChamadosJira";
+import DetalhesChamadoAlternativo from "@/components/chamados/detalhes/DetalhesChamadosAlternativo";
 import { fetchTicketById } from "@/services/service";
 
 const ChamadoPage = () => {
@@ -46,7 +47,12 @@ const ChamadoPage = () => {
   if (!chamado) return <div className="p-6">Chamado não encontrado</div>;
 
   console.log("Dados sendo passados para DetalhesChamado:", chamado);
-  return <DetalhesChamado chamado={chamado} />;
+  console.log(chamado.tipo_importacao)
+  if (chamado.tipo_importacao === "Jira"){
+    return <DetalhesChamadoJira chamado={chamado} />;
+  } else {
+    return <DetalhesChamadoAlternativo chamado={chamado} />;
+  }
 };
 
 export default ChamadoPage;

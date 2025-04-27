@@ -101,18 +101,18 @@ export default function RecentOrders() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 h-full">
-      <div className="flex justify-between items-center mb-4">
+    <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2" >
+      <div className="flex dark:text-white justify-between items-center mb-4">
         <h3 className="text-lg font-medium">Análise por Categorias</h3>
         <div className="flex space-x-2">
           <button 
-            className={`px-3 py-1 rounded ${activeTab === 'tipo' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            className={`px-3 py-1 rounded dark:text-black ${activeTab === 'tipo' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
             onClick={() => setActiveTab('tipo')}
           >
             Tipo
           </button>
           <button 
-            className={`px-3 py-1 rounded ${activeTab === 'responsavel' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            className={`px-3 py-1 rounded dark:text-black ${activeTab === 'responsavel' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
             onClick={() => setActiveTab('responsavel')}
           >
             Responsáveis

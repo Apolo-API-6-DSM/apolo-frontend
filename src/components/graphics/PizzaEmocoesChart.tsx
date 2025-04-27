@@ -10,8 +10,8 @@ const COLORS = ["#22c55e", "#facc15", "#ef4444"];
 
 export default function PizzaEmocoesChart() {
   return (
-    <div className="bg-white p-4 rounded-2xl shadow">
-      <h2 className="text-xl font-bold mb-4 text-center">Emoções</h2>
+    <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2" >
+      <h2 className="text-xl dark:text-white font-bold mb-4 text-center">Emoções - %</h2>
       <div className="flex justify-center">
         <PieChart width={300} height={250}>
           <Pie

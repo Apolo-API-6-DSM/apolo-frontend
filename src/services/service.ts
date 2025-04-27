@@ -6,10 +6,12 @@ const api = axios.create({
 
 export const importJiraCSV = async (
   file: File, 
+  fileName: string,
   onProgress?: (progress: number, phase: 'upload' | 'processing') => void
 ) => {
   const formData = new FormData();
   formData.append('file', file);
+  formData.append('fileName', fileName);
 
   try {
     const uploadResponse = await api.post('/importacao/jira', formData, {
@@ -78,6 +80,40 @@ export const fetchTicketById = async (id: string) => {
     };
   }
 };
+
+export const fetchTicketByNomeArquivoId = async (id: number) => {
+  console.log(`Buscando chamados do nome arquivo id ${id}...`);
+  try {
+    const response = await api.get(`/chamados/nome_arquivo/${id}`);
+    console.log("Resposta da API:", response.data);
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error: any) {
+    console.error("Erro na requisição:", error);
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Erro ao buscar o chamados',
+    };
+  }
+};
+
+export const fetchArquivosInfo = async () => {
+  try {
+    const response = await api.get('/chamados/arquivos-info');
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Erro ao buscar informações de arquivos',
+    };
+  }
+};
+
 
 
 export interface Chamado {

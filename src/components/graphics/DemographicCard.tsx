@@ -80,8 +80,8 @@ export default function DemographicCard() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 h-full">
-      <h3 className="text-lg font-medium mb-4">Distribuição por Sentimento</h3>
+    <div className="bg-white dark:bg-gray-800 h-full p-4 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2" >
+      <h3 className="text-lg dark:text-white font-medium mb-4">Distribuição por Sentimento</h3>
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>

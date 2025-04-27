@@ -16,9 +16,9 @@ const EmocaoPorDiaChart = () => {
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 mb-4">
+    <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2" >
       <div className="mb-2">
-        <h3 className="text-base font-bold text-gray-800">Emoções Por Dia</h3>
+        <h3 className="text-lg dark:text-white font-bold text-gray-800">Emoções Por Dia</h3>
       </div>
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">

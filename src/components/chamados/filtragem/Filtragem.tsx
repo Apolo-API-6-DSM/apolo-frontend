@@ -15,9 +15,10 @@ interface FiltrosProps {
   onFilter: (filters: FilterState) => void;
   initialFilters: FilterState;
   setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
+  hasNomeArquivoId: boolean; // Novo prop para indicar se está filtrando por nomeArquivoId
 }
 
-const Filtros = ({ onFilter, initialFilters, setFilters }: FiltrosProps) => {
+const Filtros = ({ onFilter, initialFilters, setFilters, hasNomeArquivoId }: FiltrosProps) => {
   const [filters, setInternalFilters] = useState(initialFilters);
 
   useEffect(() => {
@@ -30,7 +31,7 @@ const Filtros = ({ onFilter, initialFilters, setFilters }: FiltrosProps) => {
       ...prev,
       [name]: value
     }));
-    setFilters(prev => ({ // Atualiza o estado no componente pai imediatamente
+    setFilters(prev => ({
       ...prev,
       [name]: value
     }));
@@ -52,14 +53,21 @@ const Filtros = ({ onFilter, initialFilters, setFilters }: FiltrosProps) => {
     };
     setInternalFilters(resetValues);
     setFilters(resetValues);
-    onFilter(resetValues); // Aplica o filtro vazio para mostrar todos
+    onFilter(resetValues);
   };
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
-      <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
-        Filtros
-      </h3>
+      <div className="flex justify-between items-center mb-5">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+          Filtros
+        </h3>
+        {hasNomeArquivoId && (
+          <span className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full dark:bg-blue-900/20 dark:text-blue-200">
+            Filtrado por Arquivo
+          </span>
+        )}
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -70,10 +78,24 @@ const Filtros = ({ onFilter, initialFilters, setFilters }: FiltrosProps) => {
             onChange={handleChange}
             value={filters.status}
           >
-            <option value="">Selecione status</option>
+            <option value="">Todos os status</option>
             <option value="aberto">Aberto</option>
             <option value="pendente">Pendente</option>
             <option value="concluido">Concluído</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Tipo de Importação:</label>
+          <select
+            name="tipo_importacao"
+            className="w-full p-2 border border-gray-300 rounded-lg dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+            onChange={handleChange}
+            value={filters.tipo_importacao}
+          >
+            <option value="">Todos os tipos</option>
+            <option value="jira">Jira</option>
+            <option value="alternativo">Alternativo</option>
           </select>
         </div>
 
@@ -91,14 +113,17 @@ const Filtros = ({ onFilter, initialFilters, setFilters }: FiltrosProps) => {
 
         <div>
           <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Sentimento:</label>
-          <input
-            type="text"
+          <select
             name="sentimento_cliente"
             className="w-full p-2 border border-gray-300 rounded-lg dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
             onChange={handleChange}
             value={filters.sentimento_cliente}
-            placeholder="Filtrar por sentimento"
-          />
+          >
+            <option value="">Todos os sentimentos</option>
+            <option value="positivo">Positivo</option>
+            <option value="neutro">Neutro</option>
+            <option value="negativo">Negativo</option>
+          </select>
         </div>
 
         <div className="grid grid-cols-2 gap-3">

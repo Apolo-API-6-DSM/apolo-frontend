@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import { FaSmile, FaCommentDots, FaClock, FaUser } from "react-icons/fa";
 
 interface DetalhesChamadoProps {
   chamado: any;
@@ -41,8 +42,12 @@ const cleanMessage = (text: string) => {
   }
 };
 
-const DetalhesChamado: React.FC<DetalhesChamadoProps> = ({ chamado }) => {
+const DetalhesChamadoJira: React.FC<DetalhesChamadoProps> = ({ chamado }) => {
   const router = useRouter();
+
+  const periodoData = chamado.ultima_atualizacao
+  ? `${formatDate(chamado.data_abertura)} - ${formatDate(chamado.ultima_atualizacao)}`
+  : formatDate(chamado.data_abertura);
 
   return (
     <div className="space-y-6">
@@ -54,30 +59,54 @@ const DetalhesChamado: React.FC<DetalhesChamadoProps> = ({ chamado }) => {
       </button>
 
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
-        <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
-          Detalhes do Chamado
-        </h3>
+        <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
+          <h2 className="font-bold dark:text-white text-2xl">
+            CHAMADO {chamado.id_importado || chamado.id}
+          </h2>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div className="space-y-3">
-            <h4 className="text-md font-medium text-gray-800 dark:text-white/90">Informações Básicas</h4>
-            <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-              <p><span className="font-medium">ID:</span> {chamado.id_importado || chamado.id}</p>
-              <p><span className="font-medium">Título:</span> {chamado.titulo || "Sem título"}</p>
-              <p><span className="font-medium">Status:</span> {chamado.status || "Não informado"}</p>
-              <p><span className="font-medium">Sentimento:</span> {chamado.sentimento_cliente || "Não informado"}</p>
-            </div>
+          <span className="bg-blue-100 text-blue-600 text-xs font-semibold px-4 py-2 rounded-full">
+            {chamado.status || "Sem status"}
+          </span>
+        </div>
+
+        <div className="flex flex-wrap dark:text-white gap-6 mb-6">
+          <div className="flex items-center gap-2">
+            <FaSmile className="text-green-500" />
+            <span>{chamado.sentimento_cliente || "Não informado"}</span>
           </div>
 
-          <div className="space-y-3">
-            <h4 className="text-md font-medium text-gray-800 dark:text-white/90">Datas e Responsáveis</h4>
-            <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-              <p><span className="font-medium">Abertura:</span> {formatDate(chamado.data_abertura)}</p>
-              <p><span className="font-medium">Última atualização:</span> {formatDate(chamado.ultima_atualizacao)}</p>
-              <p><span className="font-medium">Responsável:</span> {chamado.responsavel || "Não atribuído"}</p>
-              <p><span className="font-medium">Tipo:</span> {chamado.tipo_importacao || "Não informado"}</p>
-            </div>
+          <div className="flex items-center gap-2">
+            <FaCommentDots className="text-gray-600" />
+            <span>{chamado.tipo_documento || "Não informado"}</span>
           </div>
+
+          <div className="flex items-center gap-2">
+            <FaClock className="text-gray-600" />
+            <span>{periodoData}</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <FaUser className="text-gray-600" />
+            <span>{chamado.responsavel || "Não atribuído"}</span>
+          </div>
+        </div>
+
+        <span className="block w-full bg-cover dark:text-white text-right text-base">
+          {chamado.tipo_importacao || "Não atribuído"}
+        </span>
+
+        {/* Linha tracejada */}
+        <hr className="border-dashed border-gray-400 my-4" />
+
+        {/* Título da mensagem */}
+        <div className="text-center dark:text-white font-medium text-lg mb-6">
+          {chamado.titulo || "Sem título"}
+        </div>
+
+
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
+          <h4 className="mb-4 text-md font-medium text-gray-800 dark:text-white/90">Sumarização</h4>
+            <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">{chamado.sumarizacao}</pre>
         </div>
       </div>
 
@@ -110,4 +139,4 @@ const DetalhesChamado: React.FC<DetalhesChamadoProps> = ({ chamado }) => {
   );
 };
 
-export default DetalhesChamado;
+export default DetalhesChamadoJira;
