@@ -150,3 +150,11 @@ export const formatStatus = (status: string): string => {
   
   return formattedStatus;
 };
+
+// Utility function to format status
+export const formatTipoChamado = (tipo_documento: string): string => {
+  if (!tipo_documento || tipo_documento.trim() === '') return '';
+    
+  // Formatação padrão para primeira letra maiúscula
+  return tipo_documento.charAt(0).toUpperCase() + tipo_documento.slice(1).toLowerCase();
+};
