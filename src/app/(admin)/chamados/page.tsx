@@ -297,6 +297,7 @@ const ListaChamado = () => {
               initialFilters={filterValues} 
               setFilters={setFilterValues}
               hasNomeArquivoId={!!nomeArquivoId} // Passa true se estiver filtrado por arquivo
+              onClose={closeFilterModal}
             />
             <div className="flex items-center justify-end w-full gap-3 mt-8">
               <Button size="sm" variant="outline" onClick={closeFilterModal}>
