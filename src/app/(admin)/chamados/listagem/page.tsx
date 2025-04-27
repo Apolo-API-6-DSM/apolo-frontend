@@ -285,7 +285,9 @@ const ListaChamado = () => {
             <div className="space-y-4">
               {calls
                 .slice((pagina - 1) * tamanhoPagina, pagina * tamanhoPagina)
+                .filter((chamado) => !chamado.titulo?.includes('Your') && !chamado.titulo?.includes('your'))
                 .map((chamado) => (
+                  
                   <CardChamados
                     key={chamado.id}
                     chamado={{

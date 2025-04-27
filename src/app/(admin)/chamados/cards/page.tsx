@@ -269,6 +269,7 @@ const ListaChamado = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
             {calls
             .slice((pagina - 1) * tamanhoPagina, pagina * tamanhoPagina)
+            .filter((chamado) => !chamado.titulo?.includes('Your') && !chamado.titulo?.includes('your'))
             .map((chamado) => (
               <CardSimples
                 key={chamado.id}

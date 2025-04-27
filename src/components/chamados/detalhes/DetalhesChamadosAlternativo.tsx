@@ -106,7 +106,7 @@ const DetalhesChamadoAlternativo: React.FC<DetalhesChamadoProps> = ({ chamado })
 
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
           <h4 className="mb-4 text-md font-medium text-gray-800 dark:text-white/90">Sumarização</h4>
-            <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">{cleanMessage(chamado.solucao)}</pre>
+            <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">{chamado.sumarizacao}</pre>
         </div>
       </div>
 
