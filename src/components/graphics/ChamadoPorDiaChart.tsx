@@ -172,10 +172,6 @@ const ChamadoPorDiaChart = () => {
               {renderBars()}
             </BarChart>
           </ResponsiveContainer>
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
-            Total de chamados: {Object.values(data[0]).reduce((acc: number, val) => 
-              typeof val === 'number' ? acc + val : acc, 0)}
-          </p>
         </div>
       ) : (
         <div className="h-80 flex items-center justify-center text-gray-500 dark:text-gray-400">

@@ -295,7 +295,7 @@ export default function ImportacaoPage() {
         {message?.type === 'success' && (
           <div className="flex justify-end">
             <button 
-              onClick={() => router.push('/chamados')}
+              onClick={() => router.push('/chamados/listagem')}
               className="inline-flex items-center justify-center gap-2 rounded-full border border-transparent bg-[#00163B] px-4 py-2 text-sm font-medium text-white shadow-theme-xs hover:bg-[#001e4f] dark:bg-blue-700 dark:hover:bg-blue-800"
             >
               Ver Chamados

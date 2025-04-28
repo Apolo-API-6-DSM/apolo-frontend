@@ -146,9 +146,6 @@ const EmocaoPorDiaChart = () => {
               <Bar dataKey="negativo" fill="#F44336" name="Negativo" />
             </BarChart>
           </ResponsiveContainer>
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
-            Total de chamados: {data[0].positivo + data[0].neutro + data[0].negativo}
-          </p>
         </div>
       ) : (
         <div className="h-80 flex items-center justify-center text-gray-500 dark:text-gray-400">
