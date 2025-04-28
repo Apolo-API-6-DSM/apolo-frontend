@@ -15,7 +15,7 @@ const Login = () => {
         <div className="min-h-screen flex items-center justify-center bg-[#00163B]">
             <div className="flex flex-col md:flex-row items-center justify-between gap-10 px-6 py-12">
                 <div className="text-center md:text-left">
-                    <img src="/assets/logo.png" className="w-96" alt="Logo Apolo" />
+                    <img src="/images/logo.png" className="w-96" alt="Logo Apolo" />
                 </div>
 
                 <div className="bg-gray-200 w-[531px] rounded-lg shadow-md p-8">
