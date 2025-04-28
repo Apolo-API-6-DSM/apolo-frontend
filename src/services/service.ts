@@ -48,6 +48,51 @@ export const importJiraCSV = async (
   }
 };
 
+export const importAlternativoCSV = async (
+  file: File, 
+  fileName: string,
+  onProgress?: (progress: number, phase: 'upload' | 'processing') => void
+) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('fileName', fileName);
+
+  try {
+    const uploadResponse = await api.post('/importacao/alternativo', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: (progressEvent) => {
+        if (onProgress && progressEvent.total) {
+          const progress = Math.min(
+            80, // Limita a 80% para a fase de upload
+            Math.round((progressEvent.loaded * 100) / progressEvent.total)
+          );
+          onProgress(progress, 'upload');
+        }
+      },
+    });
+
+    if (onProgress) {
+      for (let progress = 81; progress <= 100; progress++) {
+        await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 100));
+        onProgress(progress, 'processing');
+      }
+    }
+
+    return {
+      success: true,
+      data: uploadResponse.data,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Erro ao importar arquivo',
+    };
+  }
+};
+
+
 export const fetchTickets = async () => {
   try {
     const response = await api.get('/chamados');

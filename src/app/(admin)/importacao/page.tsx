@@ -1,6 +1,6 @@
 'use client'
 import { useState, useCallback, ChangeEvent, DragEvent } from 'react';
-import { importJiraCSV } from '@/services/service';
+import { importAlternativoCSV, importJiraCSV } from '@/services/service';
 import { useRouter } from 'next/navigation';
 
 export default function ImportacaoPage() {
@@ -67,19 +67,28 @@ export default function ImportacaoPage() {
     setMessage(null);
 
     try {
-      const result = await importJiraCSV(selectedFile, fileName, (progress, phase) => {
-        setUploadProgress(progress);
-        setUploadPhase(phase);
-      });
+      let result;
       
-      if (result.success) {
+      if (selectedSource === 'jira') {
+        result = await importJiraCSV(selectedFile, fileName, (progress, phase) => {
+          setUploadProgress(progress);
+          setUploadPhase(phase);
+        });
+      } else if (selectedSource === 'alternativo') {
+        result = await importAlternativoCSV(selectedFile, fileName, (progress, phase) => {
+          setUploadProgress(progress);
+          setUploadPhase(phase);
+        });
+      }
+      
+      if (result?.success) {
         setMessage({
           text: `Importação concluída! ${result.data?.processedItems || 'Chamados'} processados.`,
           type: 'success',
         });
       } else {
         setMessage({
-          text: result.error || 'Erro na importação',
+          text: result?.error || 'Erro na importação',
           type: 'error',
         });
       }
@@ -93,6 +102,7 @@ export default function ImportacaoPage() {
       setIsUploading(false);
     }
   };
+  
 
   const handleDragEnter = useCallback((e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
