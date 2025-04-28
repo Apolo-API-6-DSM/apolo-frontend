@@ -128,9 +128,9 @@ const ListaChamado = () => {
           
           // Mapeamento de status equivalentes
           const statusMap: Record<string, string[]> = {
-            'aberto': ['aberto', 'em andamento'],
+            'aberto': ['aberto', 'em andamento', 'em aberto'],
             'pendente': ['pendente', 'aguardando pelo suporte', 'itens pendentes'],
-            'concluido': ['concluido', 'concluído', 'concluída', 'resolvido', 'fechado']
+            'concluido': ['concluido', 'concluído', 'concluída', 'resolvido', 'fechado', 'cancelado']
           };
           
           // Verifica se o status do chamado corresponde ao filtro
@@ -297,6 +297,7 @@ const ListaChamado = () => {
               initialFilters={filterValues} 
               setFilters={setFilterValues}
               hasNomeArquivoId={!!nomeArquivoId} // Passa true se estiver filtrado por arquivo
+              onClose={closeFilterModal}
             />
             <div className="flex items-center justify-end w-full gap-3 mt-8">
               <Button size="sm" variant="outline" onClick={closeFilterModal}>

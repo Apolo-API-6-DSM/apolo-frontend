@@ -47,7 +47,7 @@ const navItems: NavItem[] = [
   {
     icon: <ListIcon />,
     name: "Chamados",
-    subItems: [{ name: "Todos Chamados", path: "/chamados" }],
+    subItems: [{ name: "Todos Chamados", path: "/chamados/listagem" }],
   },
   {
     icon: <UserCircleIcon />,
@@ -290,15 +290,15 @@ const AppSidebar: React.FC = () => {
                 className="dark:hidden"
                 src="/images/logo/logo.svg"
                 alt="Logo"
-                width={150}
-                height={40}
+                width={200}
+                height={60}
               />
               <Image
                 className="hidden dark:block"
                 src="/images/logo/logo-dark.svg"
                 alt="Logo"
-                width={150}
-                height={40}
+                width={200}
+                height={60}
               />
             </>
           ) : (
@@ -339,13 +339,13 @@ const AppSidebar: React.FC = () => {
                     : "justify-start"
                 }`}
               >
-                {isExpanded || isHovered || isMobileOpen ? (
+                {/* {isExpanded || isHovered || isMobileOpen ? (
                   "Others"
                 ) : (
                   <HorizontaLDots />
-                )}
+                )} */}
               </h2>
-              {renderMenuItems(othersItems, "others")}
+              {/* {renderMenuItems(othersItems, "others")} */}
             </div>
           </div>
         </nav>

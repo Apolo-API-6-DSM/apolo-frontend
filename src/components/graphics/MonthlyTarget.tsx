@@ -77,13 +77,13 @@ export default function MonthlyTarget() {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2" >
-      <h3 className="text-lg font-medium mb-4 dark:text-white">Chamados por Status</h3>
-      <div className="h-96">
+      <h3 className="text-lg font-medium mb-4 dark:text-white text-center">Chamados por Status</h3>
+      <div className="h-[500px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={statusData}
             layout="vertical"
-            margin={{ top: 5, right: 30, left: 70, bottom: 5 }}
+            margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis type="number" />

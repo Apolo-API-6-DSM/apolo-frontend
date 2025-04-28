@@ -69,6 +69,12 @@ export default function Ecommerce() {
     <div className="grid grid-cols-12 gap-4 md:gap-6 min-h-screen">
       {/* Coluna esquerda */}
       <div className="col-span-12 space-y-6 lg:col-span-8">
+        <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-200 dark:border-gray-800">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Dashboard</h3>
+          <Link href="/dashboard" className="text-sm font-medium text-[#00163B] hover:text-[#001e4f] dark:text-gray-400 dark:hover:text-gray-200">
+            Ver todos
+          </Link>
+        </div>
         <DashboardCharts />
       </div>
 
@@ -79,7 +85,7 @@ export default function Ecommerce() {
             {/* Cabeçalho */}
             <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-200 dark:border-gray-800">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Últimos Chamados</h3>
-              <Link href="/chamados" className="text-sm font-medium text-[#00163B] hover:text-[#001e4f] dark:text-gray-400 dark:hover:text-gray-200">
+              <Link href="/chamados/listagem" className="text-sm font-medium text-[#00163B] hover:text-[#001e4f] dark:text-gray-400 dark:hover:text-gray-200">
                 Ver todos
               </Link>
             </div>

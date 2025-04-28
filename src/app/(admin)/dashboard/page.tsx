@@ -22,44 +22,47 @@ import ChamadoPorDiaChart from "@/components/graphics/ChamadoPorDiaChart";
 export default function Dashboard() {
   return (
     <DashboardDataProvider>
-      <div className="grid grid-cols-12 gap-4 md:gap-6">
-        <div className="col-span-12 space-y-6 xl:col-span-7">
+      <div className="flex flex-col space-y-6">
+        <div className="col-span-12 space-y-6 xl:col-span-7 align-center">
           <EcommerceMetrics />
-          <MonthlySalesChart />
-        </div>
+          {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <TempoMedioFechamentoCard />
+            <ResponsaveisAtivosCard />
+          </div> */}
+      </div>
 
-        <div className="col-span-12 xl:col-span-5">
-          <MonthlyTarget />
-        </div>
+      <div className="col-span-12 space-y-6 xl:col-span-7">
+        <MonthlySalesChart />
+      </div>
 
-        <div className="col-span-12">
-          <StatisticsChart />
-        </div>
 
-        <div className="col-span-12 xl:col-span-5">
+      <div className="grid grid-cols-12 gap-4 md:gap-6">
+
+        <div className="col-span-12 xl:col-span-6">
           <DemographicCard />
         </div>
 
-        <div className="col-span-12 xl:col-span-7">
-          <RecentOrders />
+        <div className="col-span-12 xl:col-span-6">
+          <PizzaTipoChamadoChart />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
-        <PizzaEmocoesChart />
-        <PizzaTipoChamadoChart />
-      </div>
+      <div className="grid grid-cols-12 gap-4 md:gap-6">
+        <div className="col-span-12 xl:col-span-6">
+          <MonthlyTarget />
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-        <TempoMedioFechamentoCard />
-        <ChamadasAbertasCard />
-        <ResponsaveisAtivosCard />
+        <div className="col-span-12 xl:col-span-6">
+          <RecentOrders />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
         <EmocaoPorDiaChart />
         <ChamadoPorDiaChart />
       </div>
+
+    </div>
 
     </DashboardDataProvider>
   );

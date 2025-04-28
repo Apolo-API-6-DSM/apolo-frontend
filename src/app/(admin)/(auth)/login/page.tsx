@@ -20,7 +20,7 @@ const Login = () => {
             <div className="flex flex-col md:flex-row items-center justify-between gap-10 px-6 py-12">
                 <div className="text-center md:text-left">
                     <img 
-                        src="/assets/logo.png" 
+                        src="/images/logo.png" 
                         className="w-80 max-w-full" 
                         alt="Logo Apolo" 
                     />

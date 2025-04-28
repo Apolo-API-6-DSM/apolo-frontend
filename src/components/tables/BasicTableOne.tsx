@@ -48,7 +48,7 @@ export default function BasicTableOne() {
       console.error('ID do arquivo não está disponível');
       return;
     }
-    router.push(`/chamados?nomeArquivoId=${nomeArquivoId}`);
+    router.push(`/chamados/listagem?nomeArquivoId=${nomeArquivoId}`);
   };
 
   if (loading) {

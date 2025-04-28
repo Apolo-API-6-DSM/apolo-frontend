@@ -1,6 +1,6 @@
 'use client'
 import { useState, useCallback, ChangeEvent, DragEvent } from 'react';
-import { importJiraCSV } from '@/services/service';
+import { importAlternativoCSV, importJiraCSV } from '@/services/service';
 import { useRouter } from 'next/navigation';
 
 export default function ImportacaoPage() {
@@ -67,19 +67,28 @@ export default function ImportacaoPage() {
     setMessage(null);
 
     try {
-      const result = await importJiraCSV(selectedFile, fileName, (progress, phase) => {
-        setUploadProgress(progress);
-        setUploadPhase(phase);
-      });
+      let result;
       
-      if (result.success) {
+      if (selectedSource === 'jira') {
+        result = await importJiraCSV(selectedFile, fileName, (progress, phase) => {
+          setUploadProgress(progress);
+          setUploadPhase(phase);
+        });
+      } else if (selectedSource === 'alternativo') {
+        result = await importAlternativoCSV(selectedFile, fileName, (progress, phase) => {
+          setUploadProgress(progress);
+          setUploadPhase(phase);
+        });
+      }
+      
+      if (result?.success) {
         setMessage({
           text: `Importação concluída! ${result.data?.processedItems || 'Chamados'} processados.`,
           type: 'success',
         });
       } else {
         setMessage({
-          text: result.error || 'Erro na importação',
+          text: result?.error || 'Erro na importação',
           type: 'error',
         });
       }
@@ -93,6 +102,7 @@ export default function ImportacaoPage() {
       setIsUploading(false);
     }
   };
+  
 
   const handleDragEnter = useCallback((e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -285,7 +295,7 @@ export default function ImportacaoPage() {
         {message?.type === 'success' && (
           <div className="flex justify-end">
             <button 
-              onClick={() => router.push('/chamados')}
+              onClick={() => router.push('/chamados/listagem')}
               className="inline-flex items-center justify-center gap-2 rounded-full border border-transparent bg-[#00163B] px-4 py-2 text-sm font-medium text-white shadow-theme-xs hover:bg-[#001e4f] dark:bg-blue-700 dark:hover:bg-blue-800"
             >
               Ver Chamados
