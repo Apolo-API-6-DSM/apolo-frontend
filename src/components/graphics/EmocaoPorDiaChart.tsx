@@ -5,13 +5,15 @@ import { fetchTickets, Chamado } from '@/services/service';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useDashboardDate } from "@/components/graphics/DashboardDateContext";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
 const EmocaoPorDiaChart = () => {
   const [data, setData] = useState<any[]>([]);
   const [allChamados, setAllChamados] = useState<Chamado[]>([]);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const { selectedDate } = useDashboardDate();
+  const [dataLocal, setDataLocal] = useState<Date>(selectedDate ?? new Date());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,10 +40,15 @@ const EmocaoPorDiaChart = () => {
   }, []);
 
   useEffect(() => {
-    if (allChamados.length > 0 && selectedDate) {
-      processChartData(allChamados, selectedDate);
+    if (allChamados.length > 0 && dataLocal) {
+      processChartData(allChamados, dataLocal);
     }
-  }, [allChamados, selectedDate]);
+  }, [allChamados, dataLocal]);
+
+  // Sincroniza data local com a global apenas quando selectedDate muda
+  useEffect(() => {
+    if (selectedDate) setDataLocal(selectedDate);
+  }, [selectedDate]);
 
   const processChartData = (chamados: Chamado[], date: Date) => {
     const targetDate = format(date, 'yyyy-MM-dd');
@@ -85,7 +92,7 @@ const EmocaoPorDiaChart = () => {
   };
 
   const handleDateChange = (date: Date | null) => {
-    setSelectedDate(date);
+    setDataLocal(date ?? new Date());
   };
 
   if (isLoading) {
@@ -114,10 +121,10 @@ const EmocaoPorDiaChart = () => {
         <h3 className="text-lg dark:text-white font-bold">Emoções Por Dia</h3>
         <div className="relative">
           <DatePicker
-            selected={selectedDate}
+            selected={dataLocal}
             onChange={handleDateChange}
             dateFormat="dd/MM/yyyy"
-            className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="bg-white border border-gray-300 rounded px-2 py-1 text-sm w-[120px]"
             locale={ptBR}
             maxDate={new Date()}
           />
