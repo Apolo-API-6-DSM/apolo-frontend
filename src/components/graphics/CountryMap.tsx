@@ -32,6 +32,17 @@ type Marker = {
   };
 };
 
+const colorMap: Record<string, string> = {
+  Concluído: "#2196F3",
+  Aberto: "#FF9800",
+  Pendente: "#9C27B0",
+  Outros: "#9C27B0",
+  Positivo: "#4CAF50",
+  Neutro: "#FFEB3B",
+  Negativo: "#F44336",
+};
+const defaultColors = ["#2196F3", "#FF9800", "#9C27B0"];
+
 const CountryMap: React.FC<CountryMapProps> = ({ mapColor }) => {
   return (
     <VectorMap
@@ -52,7 +63,7 @@ const CountryMap: React.FC<CountryMapProps> = ({ mapColor }) => {
             latLng: [37.2580397, -104.657039],
             name: "United States",
             style: {
-              fill: "#465FFF",
+              fill: colorMap["Concluido"] || defaultColors[0],
               borderWidth: 1,
               borderColor: "white",
               stroke: "#383f47",
@@ -61,18 +72,18 @@ const CountryMap: React.FC<CountryMapProps> = ({ mapColor }) => {
           {
             latLng: [20.7504374, 73.7276105],
             name: "India",
-            style: { fill: "#465FFF", borderWidth: 1, borderColor: "white" },
+            style: { fill: colorMap["Aberto"] || defaultColors[1], borderWidth: 1, borderColor: "white" },
           },
           {
             latLng: [53.613, -11.6368],
             name: "United Kingdom",
-            style: { fill: "#465FFF", borderWidth: 1, borderColor: "white" },
+            style: { fill: colorMap["Pendente"] || defaultColors[2], borderWidth: 1, borderColor: "white" },
           },
           {
             latLng: [-25.0304388, 115.2092761],
             name: "Sweden",
             style: {
-              fill: "#465FFF",
+              fill: colorMap["Outros"] || defaultColors[2],
               borderWidth: 1,
               borderColor: "white",
               strokeOpacity: 0,

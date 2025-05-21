@@ -149,7 +149,7 @@ const EmocaoPorDiaChart = () => {
               <Tooltip />
               <Legend />
               <Bar dataKey="positivo" fill="#4CAF50" name="Positivo" />
-              <Bar dataKey="neutro" fill="#2196F3" name="Neutro" />
+              <Bar dataKey="neutro" fill="#FFEB3B" name="Neutro" />
               <Bar dataKey="negativo" fill="#F44336" name="Negativo" />
             </BarChart>
           </ResponsiveContainer>

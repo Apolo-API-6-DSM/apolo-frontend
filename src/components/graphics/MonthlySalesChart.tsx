@@ -289,7 +289,7 @@ export default function MonthlySalesChart() {
             <Line 
               type="monotone" 
               dataKey="value" 
-              stroke="#3182ce" 
+              stroke="#2196F3" 
               name="Chamados" 
               activeDot={{ r: 8 }} 
             />
