@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 
-interface Viewer {
+interface Usuario {
   nome: string;
   email: string;
   senha?: string;
@@ -11,18 +11,18 @@ interface Viewer {
 }
 
 interface Props {
-  dadosIniciais: Viewer;
-  onSubmit: (viewer: Viewer) => void;
+  dadosIniciais: Usuario;
+  onSubmit: (usuario: Usuario) => void;
 }
 
-const AtualizacaoViewer: React.FC<Props> = ({ dadosIniciais, onSubmit }) => {
-  const [viewer, setViewer] = useState<Viewer>(dadosIniciais);
+const AtualizacaoUsuario: React.FC<Props> = ({ dadosIniciais, onSubmit }) => {
+  const [usuario, setUsuario] = useState<Usuario>(dadosIniciais);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setViewer((prev) => ({
+    setUsuario((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -30,7 +30,7 @@ const AtualizacaoViewer: React.FC<Props> = ({ dadosIniciais, onSubmit }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(viewer);
+    onSubmit(usuario);
   };
 
   return (
@@ -41,7 +41,7 @@ const AtualizacaoViewer: React.FC<Props> = ({ dadosIniciais, onSubmit }) => {
           type="text"
           name="nome"
           placeholder="Nome"
-          value={viewer.nome}
+          value={usuario.nome}
           onChange={handleChange}
           className="w-full p-2 border border-gray-300 rounded-md bg-white shadow"
           required
@@ -50,7 +50,7 @@ const AtualizacaoViewer: React.FC<Props> = ({ dadosIniciais, onSubmit }) => {
           type="email"
           name="email"
           placeholder="Email"
-          value={viewer.email}
+          value={usuario.email}
           onChange={handleChange}
           className="w-full p-2 border border-gray-300 rounded-md bg-white shadow"
           required
@@ -59,13 +59,13 @@ const AtualizacaoViewer: React.FC<Props> = ({ dadosIniciais, onSubmit }) => {
           type="password"
           name="senha"
           placeholder="Senha (opcional)"
-          value={viewer.senha || ""}
+          value={usuario.senha || ""}
           onChange={handleChange}
           className="w-full p-2 border border-gray-300 rounded-md bg-white shadow"
         />
         <select
           name="perfil"
-          value={viewer.perfil}
+          value={usuario.perfil}
           onChange={handleChange}
           className="w-full p-2 border border-gray-300 rounded-md bg-white shadow"
         >
@@ -74,7 +74,7 @@ const AtualizacaoViewer: React.FC<Props> = ({ dadosIniciais, onSubmit }) => {
         </select>
         <select
           name="status"
-          value={viewer.status}
+          value={usuario.status}
           onChange={handleChange}
           className="w-full p-2 border border-gray-300 rounded-md bg-white shadow"
         >
@@ -92,4 +92,4 @@ const AtualizacaoViewer: React.FC<Props> = ({ dadosIniciais, onSubmit }) => {
   );
 };
 
-export default AtualizacaoViewer;
+export default AtualizacaoUsuario;

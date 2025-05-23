@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 
-interface Viewer {
+interface Usuario {
   nome: string;
   email: string;
   senha: string;
@@ -10,11 +10,11 @@ interface Viewer {
 }
 
 interface Props {
-  onSubmit: (viewer: Viewer) => void;
+  onSubmit: (usuario: Usuario) => void;
 }
 
-const CadastroViewer: React.FC<Props> = ({ onSubmit }) => {
-  const [viewer, setViewer] = useState<Viewer>({
+const CadastroUsuario: React.FC<Props> = ({ onSubmit }) => {
+  const [usuario, setUsuario] = useState<Usuario>({
     nome: "",
     email: "",
     senha: "",
@@ -25,7 +25,7 @@ const CadastroViewer: React.FC<Props> = ({ onSubmit }) => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setViewer((prev) => ({
+    setUsuario((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -33,7 +33,7 @@ const CadastroViewer: React.FC<Props> = ({ onSubmit }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(viewer);
+    onSubmit(usuario);
   };
 
   return (
@@ -44,7 +44,7 @@ const CadastroViewer: React.FC<Props> = ({ onSubmit }) => {
           type="text"
           name="nome"
           placeholder="Nome"
-          value={viewer.nome}
+          value={usuario.nome}
           onChange={handleChange}
           className="w-full p-2 border border-gray-300 rounded-md bg-white shadow"
           required
@@ -53,7 +53,7 @@ const CadastroViewer: React.FC<Props> = ({ onSubmit }) => {
           type="email"
           name="email"
           placeholder="Email"
-          value={viewer.email}
+          value={usuario.email}
           onChange={handleChange}
           className="w-full p-2 border border-gray-300 rounded-md bg-white shadow"
           required
@@ -62,14 +62,14 @@ const CadastroViewer: React.FC<Props> = ({ onSubmit }) => {
           type="password"
           name="senha"
           placeholder="Senha"
-          value={viewer.senha}
+          value={usuario.senha}
           onChange={handleChange}
           className="w-full p-2 border border-gray-300 rounded-md bg-white shadow"
           required
         />
         <select
           name="perfil"
-          value={viewer.perfil}
+          value={usuario.perfil}
           onChange={handleChange}
           className="w-full p-2 border border-gray-300 rounded-md bg-white shadow"
         >
@@ -87,4 +87,4 @@ const CadastroViewer: React.FC<Props> = ({ onSubmit }) => {
   );
 };
 
-export default CadastroViewer;
+export default CadastroUsuario;
