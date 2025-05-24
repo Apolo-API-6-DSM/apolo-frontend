@@ -20,52 +20,80 @@ import { DashboardDateProvider, useDashboardDate } from "@/components/graphics/D
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FiSearch } from "react-icons/fi";
+import { ptBR } from "date-fns/locale/pt-BR";
 
 function DashboardDateFilter() {
-  const { selectedDate, setSelectedDate } = useDashboardDate();
-  const [tempDate, setTempDate] = React.useState<Date | null>(selectedDate);
+  const { selectedRange, setSelectedRange } = useDashboardDate();
+  const [range, setRange] = React.useState<{ start: Date | null; end: Date | null }>(selectedRange);
 
-  // Atualiza o campo temporário quando o filtro global muda (ex: ao limpar)
   React.useEffect(() => {
-    setTempDate(selectedDate);
-  }, [selectedDate]);
+    setRange(selectedRange);
+  }, [selectedRange]);
 
   const handlePesquisar = () => {
-    setSelectedDate(tempDate);
+    setSelectedRange(range);
   };
 
   const handleLimpar = () => {
     const today = new Date();
-    setTempDate(today);
-    setSelectedDate(today);
+    setRange({ start: today, end: null });
+    setSelectedRange({ start: today, end: null });
   };
 
   return (
-    <div className="mb-4 flex items-center gap-2">
-      <span className="text-gray-700 font-medium">Filtro</span>
-      <div className="relative flex items-center">
-        <DatePicker
-          selected={tempDate}
-          onChange={setTempDate}
-          dateFormat="dd/MM/yyyy"
-          className="bg-white border border-gray-300 rounded px-2 py-1 text-sm w-[120px]"
-          maxDate={new Date()}
-        />
+    <div className="mb-4 flex items-end gap-3">
+      <div className="flex gap-4">
+        <div className="flex flex-col">
+          <label className="text-xs mb-1 text-gray-600 dark:text-gray-300">Início</label>
+          <DatePicker
+            selected={range.start}
+            onChange={date => setRange(r => ({ ...r, start: date }))}
+            showTimeSelect
+            timeFormat="HH:mm"
+            timeIntervals={15}
+            dateFormat="dd/MM/yyyy HH:mm"
+            placeholderText="Data/Hora Início"
+            className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-52 z-[1000]"
+            maxDate={new Date()}
+            isClearable
+            locale={ptBR}
+            popperClassName="z-[1000]"
+          />
+        </div>
+        <div className="flex flex-col">
+          <label className="text-xs mb-1 text-gray-600 dark:text-gray-300">Fim</label>
+          <DatePicker
+            selected={range.end}
+            onChange={date => setRange(r => ({ ...r, end: date }))}
+            showTimeSelect
+            timeFormat="HH:mm"
+            timeIntervals={15}
+            dateFormat="dd/MM/yyyy HH:mm"
+            placeholderText="Data/Hora Fim"
+            className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-52 z-[1000]"
+            maxDate={new Date()}
+            isClearable
+            locale={ptBR}
+            popperClassName="z-[1000]"
+          />
+        </div>
       </div>
-      <button
-        className="ml-2 px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition"
-        onClick={handlePesquisar}
-        type="button"
-      >
-        Pesquisar
-      </button>
-      <button
-        className="ml-1 px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300 transition"
-        onClick={handleLimpar}
-        type="button"
-      >
-        Limpar
-      </button>
+      <div className="flex gap-2">
+        <button
+          className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition w-28"
+          onClick={handlePesquisar}
+          type="button"
+        >
+          Pesquisar
+        </button>
+        <button
+          className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-300 transition w-28"
+          onClick={handleLimpar}
+          type="button"
+        >
+          Limpar
+        </button>
+      </div>
     </div>
   );
 }

@@ -6,16 +6,18 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useDashboardDate } from "@/components/graphics/DashboardDateContext";
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import  DatePicker  from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const EmocaoPorDiaChart = () => {
   const [data, setData] = useState<any[]>([]);
   const [allChamados, setAllChamados] = useState<Chamado[]>([]);
-  const { selectedDate } = useDashboardDate();
-  const [dataLocal, setDataLocal] = useState<Date>(selectedDate ?? new Date());
+  const { selectedRange } = useDashboardDate();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Adiciona novamente o DatePicker local para filtro específico
+  const [dataLocal, setDataLocal] = useState<Date>(selectedRange.start ?? new Date());
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,59 +42,43 @@ const EmocaoPorDiaChart = () => {
   }, []);
 
   useEffect(() => {
-    if (allChamados.length > 0 && dataLocal) {
-      processChartData(allChamados, dataLocal);
+    if (allChamados.length > 0 && selectedRange.start) {
+      processChartData(allChamados, selectedRange.start, selectedRange.end);
     }
-  }, [allChamados, dataLocal]);
+  }, [allChamados, selectedRange]);
 
-  // Sincroniza data local com a global apenas quando selectedDate muda
   useEffect(() => {
-    if (selectedDate) setDataLocal(selectedDate);
-  }, [selectedDate]);
+    if (selectedRange.start) setDataLocal(selectedRange.start);
+  }, [selectedRange]);
 
-  const processChartData = (chamados: Chamado[], date: Date) => {
-    const targetDate = format(date, 'yyyy-MM-dd');
-    
-    // Filtra chamados do dia selecionado
-    const chamadosDoDia = chamados.filter(chamado => {
+  const processChartData = (chamados: Chamado[], start: Date, end: Date | null) => {
+    // Filtra chamados no intervalo selecionado
+    const startDate = format(start, 'yyyy-MM-dd');
+    const endDate = end ? format(end, 'yyyy-MM-dd') : startDate;
+    const chamadosNoIntervalo = chamados.filter(chamado => {
       if (!chamado.data_abertura) return false;
       const chamadoDate = format(parseISO(chamado.data_abertura), 'yyyy-MM-dd');
-      return chamadoDate === targetDate;
+      return chamadoDate >= startDate && chamadoDate <= endDate;
     });
 
     // Conta sentimentos
-    const contagem = {
-      positivo: 0,
-      neutro: 0,
-      negativo: 0
-    };
-
-    chamadosDoDia.forEach(chamado => {
+    const contagem = { positivo: 0, neutro: 0, negativo: 0 };
+    chamadosNoIntervalo.forEach(chamado => {
       if (!chamado.sentimento_cliente) return;
-      
       const sentimento = chamado.sentimento_cliente.toLowerCase();
-      if (sentimento.includes('positiv')) {
-        contagem.positivo++;
-      } else if (sentimento.includes('neutr')) {
-        contagem.neutro++;
-      } else if (sentimento.includes('negativ')) {
-        contagem.negativo++;
-      }
+      if (sentimento.includes('positiv')) contagem.positivo++;
+      else if (sentimento.includes('neutr')) contagem.neutro++;
+      else if (sentimento.includes('negativ')) contagem.negativo++;
     });
 
     // Formata para o gráfico
     const chartData = [{
-      data: format(date, 'dd/MM/yyyy'),
+      data: end ? `${format(start, 'dd/MM/yyyy')} - ${format(end, 'dd/MM/yyyy')}` : format(start, 'dd/MM/yyyy'),
       positivo: contagem.positivo,
       neutro: contagem.neutro,
       negativo: contagem.negativo
     }];
-
     setData(chartData);
-  };
-
-  const handleDateChange = (date: Date | null) => {
-    setDataLocal(date ?? new Date());
   };
 
   if (isLoading) {
@@ -122,7 +108,7 @@ const EmocaoPorDiaChart = () => {
         <div className="relative">
           <DatePicker
             selected={dataLocal}
-            onChange={handleDateChange}
+            onChange={date => setDataLocal(date ?? new Date())}
             dateFormat="dd/MM/yyyy"
             className="bg-white border border-gray-300 rounded px-2 py-1 text-sm w-[120px]"
             locale={ptBR}
@@ -130,7 +116,6 @@ const EmocaoPorDiaChart = () => {
           />
         </div>
       </div>
-      
       {data.length > 0 ? (
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">

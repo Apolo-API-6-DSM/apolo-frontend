@@ -3,13 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import { fetchTickets, Chamado } from '@/services/service';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { format, parseISO, startOfDay, endOfDay, startOfWeek, endOfWeek, 
-  startOfMonth, endOfMonth, startOfYear, endOfYear, addDays, addMonths, 
-  eachDayOfInterval, eachWeekOfInterval, eachMonthOfInterval, isSameMonth } from 'date-fns';
+import {
+  format, parseISO, startOfDay, endOfDay, startOfWeek, endOfWeek,
+  startOfMonth, endOfMonth, startOfYear, endOfYear, addDays, addMonths,
+  eachDayOfInterval, eachWeekOfInterval, eachMonthOfInterval, isSameMonth
+} from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 import { useDashboardDate } from "@/components/graphics/DashboardDateContext";
+import DatePicker from 'react-datepicker';
 
 type Periodo = 'dia' | 'semana' | 'mes' | 'trimestre' | 'ano';
 
@@ -21,13 +22,15 @@ export default function MonthlySalesChart() {
   const [periodo, setPeriodo] = useState<Periodo>('semana');
   const [dataInicio, setDataInicio] = useState<Date>(new Date());
   const [dataFim, setDataFim] = useState<Date>(new Date());
-  const { selectedDate } = useDashboardDate(); // data global
-  const [dataLocal, setDataLocal] = useState<Date>(selectedDate ?? new Date()); // data local do gráfico
+  const { selectedRange } = useDashboardDate(); // usa o filtro global
 
-  // Sincroniza data local com a global quando a global muda
+  // Sincroniza intervalo local com o global
   useEffect(() => {
-    if (selectedDate) setDataLocal(selectedDate);
-  }, [selectedDate]);
+    if (selectedRange.start) {
+      setDataInicio(selectedRange.start);
+      setDataFim(selectedRange.end ?? selectedRange.start);
+    }
+  }, [selectedRange]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,11 +58,11 @@ export default function MonthlySalesChart() {
     if (allChamados.length > 0) {
       atualizarIntervaloDatas();
     }
-  }, [allChamados, periodo, dataLocal]); // usa dataLocal
+  }, [allChamados, periodo]); // usa dataLocal
 
   const atualizarIntervaloDatas = () => {
-    const safeDate = dataLocal ?? new Date();
-    switch(periodo) {
+    const safeDate = dataInicio ?? new Date();
+    switch (periodo) {
       case 'dia':
         setDataInicio(startOfDay(safeDate));
         setDataFim(endOfDay(safeDate));
@@ -94,10 +97,6 @@ export default function MonthlySalesChart() {
   const handlePeriodoChange = (novoPeriodo: Periodo) => {
     setPeriodo(novoPeriodo);
     atualizarIntervaloDatas();
-  };
-
-  const handleDataChange = (date: Date | null) => {
-    setDataLocal(date ?? new Date());
   };
 
   const processTrafficData = () => {
@@ -156,11 +155,11 @@ export default function MonthlySalesChart() {
       let formato: string;
       let nomeIntervalo: (date: Date) => string;
 
-      switch(periodo) {
+      switch (periodo) {
         case 'trimestre':
-          intervalos = eachMonthOfInterval({ 
-            start: dataInicio, 
-            end: dataFim 
+          intervalos = eachMonthOfInterval({
+            start: dataInicio,
+            end: dataFim
           });
           formato = 'MMM'; // Mês abreviado
           nomeIntervalo = (date) => format(date, 'MMM/yyyy', { locale: ptBR });
@@ -194,47 +193,21 @@ export default function MonthlySalesChart() {
     setTrafficData(dataFormatada);
   };
 
-  // Adiciona o DatePicker local ao gráfico
-  const renderPeriodoInfo = () => {
-    const pickerClasses = "bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full max-w-[180px]";
-    return (
-      <div className="flex items-center gap-6 flex-wrap dark:text-white">
-        {(periodo === 'dia' || periodo === 'semana' || periodo === 'mes' || periodo === 'trimestre' || periodo === 'ano') && (
-          <>
-            <DatePicker
-              selected={dataLocal}
-              onChange={handleDataChange}
-              dateFormat={
-                periodo === 'dia' || periodo === 'semana' ? 'dd/MM/yyyy' :
-                periodo === 'mes' || periodo === 'trimestre' ? 'MM/yyyy' :
-                'yyyy'
-              }
-              showMonthYearPicker={periodo === 'mes' || periodo === 'trimestre'}
-              showYearPicker={periodo === 'ano'}
-              className={pickerClasses + ' dark:text-white'}
-              popperClassName="!z-50 w-full max-w-[280px]"
-              locale={ptBR}
-            />
-            {periodo === 'dia' && (
-              <span>Dia selecionado: {format(dataInicio, 'dd/MM/yyyy')}</span>
-            )}
-            {periodo === 'semana' && (
-              <span>Semana: {format(dataInicio, 'dd/MM')} a {format(dataFim, 'dd/MM/yyyy')}</span>
-            )}
-            {periodo === 'mes' && (
-              <span>Mês: {format(dataInicio, 'MM/yyyy')}</span>
-            )}
-            {periodo === 'trimestre' && (
-              <span>Trimestre: {format(dataInicio, 'MM/yyyy')} a {format(dataFim, 'MM/yyyy')}</span>
-            )}
-            {periodo === 'ano' && (
-              <span>Ano: {format(dataInicio, 'yyyy')}</span>
-            )}
-          </>
-        )}
-      </div>
-    );
-  };
+  // Adiciona o DatePicker local para filtro de data, mas sincroniza com o filtro global
+  const [dataInicioLocal, setDataInicioLocal] = useState<Date>(selectedRange.start ?? new Date());
+  const [dataFimLocal, setDataFimLocal] = useState<Date>(selectedRange.end ?? new Date());
+
+  useEffect(() => {
+    if (selectedRange.start) setDataInicioLocal(selectedRange.start);
+    if (selectedRange.end) setDataFimLocal(selectedRange.end);
+  }, [selectedRange]);
+
+  useEffect(() => {
+    if (allChamados.length > 0 && dataInicioLocal && dataFimLocal) {
+      setDataInicio(dataInicioLocal);
+      setDataFim(dataFimLocal);
+    }
+  }, [allChamados, dataInicioLocal, dataFimLocal]);
 
   if (isLoading) {
     return (
@@ -256,24 +229,43 @@ export default function MonthlySalesChart() {
     );
   }
 
+  // Adiciona o select de período novamente
   return (
     <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2">
       <div className="flex justify-between items-center mb-2">
         <h3 className="text-lg dark:text-white font-medium">Tráfego de Chamados</h3>
-        <div className="flex items-center gap-2">
-          <select 
-            value={periodo}
-            onChange={(e) => handlePeriodoChange(e.target.value as Periodo)}
-            className="bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="dia">Dia</option>
-            <option value="semana">Semana</option>
-            <option value="mes">Mês</option>
-            <option value="trimestre">Trimestre</option>
-            <option value="ano">Ano</option>
-          </select>
-          {renderPeriodoInfo()}
-        </div>
+        <div className="flex items-center gap-2 -translate-x-10">
+          <div className="flex gap-4">
+            <div className="flex flex-col">
+              <label className="text-xs mb-1 text-gray-600 dark:text-gray-300">Início</label>
+              <DatePicker
+                selected={dataInicioLocal}
+                onChange={date => setDataInicioLocal(date ?? new Date())}
+                showTimeSelect
+                timeFormat="HH:mm"
+                timeIntervals={15}
+                dateFormat="dd/MM/yyyy HH:mm"
+                className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-"
+                locale={ptBR}
+                maxDate={new Date()}
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-xs mb-1 text-gray-600 dark:text-gray-300">Fim</label>
+              <DatePicker
+                selected={dataFimLocal}
+                onChange={date => setDataFimLocal(date ?? new Date())}
+                showTimeSelect
+                timeFormat="HH:mm"
+                timeIntervals={15}
+                dateFormat="dd/MM/yyyy HH:mm"
+                className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-52"
+                locale={ptBR}
+                maxDate={new Date()}
+              />
+            </div>
+          </div>
+        </div>  
       </div>
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
@@ -286,12 +278,12 @@ export default function MonthlySalesChart() {
             <YAxis />
             <Tooltip />
             <Legend />
-            <Line 
-              type="monotone" 
-              dataKey="value" 
-              stroke="#2196F3" 
-              name="Chamados" 
-              activeDot={{ r: 8 }} 
+            <Line
+              type="monotone"
+              dataKey="value"
+              stroke="#2196F3"
+              name="Chamados"
+              activeDot={{ r: 8 }}
             />
           </LineChart>
         </ResponsiveContainer>
