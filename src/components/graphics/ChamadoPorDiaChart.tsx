@@ -7,13 +7,20 @@ import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { useDashboardDate } from './DashboardDateContext';
 
 const ChamadoPorDiaChart = () => {
   const [data, setData] = useState<any[]>([]);
   const [allChamados, setAllChamados] = useState<Chamado[]>([]);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { selectedDate } = useDashboardDate();
+  const [dataLocal, setDataLocal] = useState<Date>(selectedDate ?? new Date());
+
+  // Sincroniza data local com a global apenas quando selectedDate muda
+  useEffect(() => {
+    if (selectedDate) setDataLocal(selectedDate);
+  }, [selectedDate]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,10 +45,10 @@ const ChamadoPorDiaChart = () => {
   }, []);
 
   useEffect(() => {
-    if (allChamados.length > 0 && selectedDate) {
-      processChartData(allChamados, selectedDate);
+    if (allChamados.length > 0 && dataLocal) {
+      processChartData(allChamados, dataLocal);
     }
-  }, [allChamados, selectedDate]);
+  }, [allChamados, dataLocal]);
 
   const formatTipoDocumento = (tipo: string): string => {
     if (!tipo) return 'Outros';
@@ -96,7 +103,7 @@ const ChamadoPorDiaChart = () => {
   };
 
   const handleDateChange = (date: Date | null) => {
-    setSelectedDate(date);
+    setDataLocal(date ?? new Date());
   };
 
   // Gera as barras dinamicamente
@@ -142,8 +149,8 @@ const ChamadoPorDiaChart = () => {
         <h3 className="text-lg dark:text-white font-bold">Chamados Por Dia</h3>
         <div className="relative">
           <DatePicker
-            selected={selectedDate}
-            onChange={handleDateChange}
+            selected={dataLocal}
+            onChange={date => setDataLocal(date ?? new Date())}
             dateFormat="dd/MM/yyyy"
             className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             locale={ptBR}
