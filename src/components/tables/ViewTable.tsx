@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -6,213 +8,177 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-
 import Badge from "../ui/badge/Badge";
-import Image from "next/image";
+import Button from "../ui/button/Button";
 
-interface Order {
+interface Viewer {
   id: number;
-  user: {
-    image: string;
-    name: string;
-    role: string;
-  };
-  projectName: string;
-  team: {
-    images: string[];
-  };
-  status: string;
-  budget: string;
+  name: string;
+  role: string;
+  email: string;
+  status: "ativo" | "inativo";
+  chamados: number;
+  lastActivity: string;
 }
 
-// Define the table data using the interface
-const tableData: Order[] = [
-  {
-    id: 1,
-    user: {
-      image: "/images/user/user-17.jpg",
-      name: "Lindsey Curtis",
-      role: "Web Designer",
+export default function ViewersTable() {
+  const [viewers, setViewers] = useState<Viewer[]>([
+    {
+      id: 1,
+      name: "Carlos Silva",
+      role: "Admin",
+      email: "carlos.silva@empresa.com",
+      status: "ativo",
+      chamados: 12,
+      lastActivity: "2023-05-15",
     },
-    projectName: "Agency Website",
-    team: {
-      images: [
-        "/images/user/user-22.jpg",
-        "/images/user/user-23.jpg",
-        "/images/user/user-24.jpg",
-      ],
+    {
+      id: 2,
+      name: "Ana Oliveira",
+      role: "Viewer",
+      email: "ana.oliveira@empresa.com",
+      status: "ativo",
+      chamados: 8,
+      lastActivity: "2023-05-18",
     },
-    budget: "3.9K",
-    status: "Active",
-  },
-  {
-    id: 2,
-    user: {
-      image: "/images/user/user-18.jpg",
-      name: "Kaiya George",
-      role: "Project Manager",
+    {
+      id: 3,
+      name: "Pedro Santos",
+      role: "Viewer",
+      email: "pedro.santos@empresa.com",
+      status: "inativo",
+      chamados: 3,
+      lastActivity: "2023-04-28",
     },
-    projectName: "Technology",
-    team: {
-      images: ["/images/user/user-25.jpg", "/images/user/user-26.jpg"],
+    {
+      id: 4,
+      name: "Mariana Costa",
+      role: "Viewer",
+      email: "mariana.costa@empresa.com",
+      status: "ativo",
+      chamados: 15,
+      lastActivity: "2023-05-20",
     },
-    budget: "24.9K",
-    status: "Pending",
-  },
-  {
-    id: 3,
-    user: {
-      image: "/images/user/user-17.jpg",
-      name: "Zain Geidt",
-      role: "Content Writing",
+    {
+      id: 5,
+      name: "Rafael Pereira",
+      role: "Viewer",
+      email: "rafael.pereira@empresa.com",
+      status: "inativo",
+      chamados: 5,
+      lastActivity: "2023-05-10",
     },
-    projectName: "Blog Writing",
-    team: {
-      images: ["/images/user/user-27.jpg"],
-    },
-    budget: "12.7K",
-    status: "Active",
-  },
-  {
-    id: 4,
-    user: {
-      image: "/images/user/user-20.jpg",
-      name: "Abram Schleifer",
-      role: "Digital Marketer",
-    },
-    projectName: "Social Media",
-    team: {
-      images: [
-        "/images/user/user-28.jpg",
-        "/images/user/user-29.jpg",
-        "/images/user/user-30.jpg",
-      ],
-    },
-    budget: "2.8K",
-    status: "Cancel",
-  },
-  {
-    id: 5,
-    user: {
-      image: "/images/user/user-21.jpg",
-      name: "Carla George",
-      role: "Front-end Developer",
-    },
-    projectName: "Website",
-    team: {
-      images: [
-        "/images/user/user-31.jpg",
-        "/images/user/user-32.jpg",
-        "/images/user/user-33.jpg",
-      ],
-    },
-    budget: "4.5K",
-    status: "Active",
-  },
-];
+   ]);
 
-export default function ViewTable() {
+  const toggleStatus = (id: number) => {
+    setViewers(prevViewers =>
+      prevViewers.map(viewer =>
+        viewer.id === id
+          ? {
+              ...viewer,
+              status: viewer.status === "ativo" ? "inativo" : "ativo",
+            }
+          : viewer
+      )
+    );
+  };
+
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-      <div className="max-w-full overflow-x-auto">
-        <div className="min-w-[1102px]">
-          <Table>
-            {/* Table Header */}
-            <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
-              <TableRow>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Viewers
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Nome
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Email
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Status
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Quantidade de chamados
-                </TableCell>
-              </TableRow>
-            </TableHeader>
+      {/* Remova a div com overflow-x-auto e min-w-[1102px] */}
+      <Table className="w-full"> {/* Adicione w-full aqui */}
+        <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
+          <TableRow>
+            <TableCell
+              isHeader
+              className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+            >
+              Nome
+            </TableCell>
+            <TableCell
+              isHeader
+              className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+            >
+              Cargo
+            </TableCell>
+            <TableCell
+              isHeader
+              className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+            >
+              E-mail
+            </TableCell>
+            <TableCell
+              isHeader
+              className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+            >
+              Status
+            </TableCell>
+            <TableCell
+              isHeader
+              className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+            >
+              Chamados
+            </TableCell>
+            <TableCell
+              isHeader
+              className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+            >
+              Última Atividade
+            </TableCell>
+            <TableCell
+              isHeader
+              className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+            >
+              Ações
+            </TableCell>
+          </TableRow>
+        </TableHeader>
 
-            {/* Table Body */}
-            <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-              {tableData.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell className="px-5 py-4 sm:px-6 text-start">
-                    <div className="flex items-center gap-3">
-                      <div>
-                        <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                          {order.user.name}
-                        </span>
-                        <span className="block text-gray-500 text-theme-xs dark:text-gray-400">
-                          {order.user.role}
-                        </span>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                    {order.projectName}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                    <div className="flex -space-x-2">
-                      {order.team.images.map((teamImage, index) => (
-                        <div
-                          key={index}
-                          className="w-6 h-6 overflow-hidden border-2 border-white rounded-full dark:border-gray-900"
-                        >
-                          <Image
-                            width={24}
-                            height={24}
-                            src={teamImage}
-                            alt={`Team member ${index + 1}`}
-                            className="w-full"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                    <Badge
-                      size="sm"
-                      color={
-                        order.status === "Active"
-                          ? "success"
-                          : order.status === "Pending"
-                          ? "warning"
-                          : "error"
-                      }
-                    >
-                      {order.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {order.budget}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+        <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
+          {viewers.map((viewer) => (
+            <TableRow key={viewer.id}>
+              <TableCell className="px-5 py-4 text-start">
+                <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                  {viewer.name}
+                </span>
+              </TableCell>
+              <TableCell className="px-5 py-4 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                {viewer.role}
+              </TableCell>
+              <TableCell className="px-5 py-4 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                {viewer.email}
+              </TableCell>
+              <TableCell className="px-5 py-4 text-start">
+                <Badge
+                  size="sm"
+                  color={viewer.status === "ativo" ? "success" : "error"}
+                >
+                  {viewer.status === "ativo" ? "Ativo" : "Inativo"}
+                </Badge>
+              </TableCell>
+              <TableCell className="px-5 py-4 text-gray-800 text-theme-sm dark:text-white/90">
+                {viewer.chamados}
+              </TableCell>
+              <TableCell className="px-5 py-4 text-gray-500 text-theme-sm dark:text-gray-400">
+                {viewer.lastActivity}
+              </TableCell>
+              <TableCell className="px-5 py-4 text-start">
+                <Button
+                  variant="outline"
+                  onClick={() => toggleStatus(viewer.id)}
+                  className={
+                    viewer.status === "ativo"
+                      ? "border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      : "border-green-500 text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20"
+                  }
+                >
+                  {viewer.status === "ativo" ? "Desativar" : "Ativar"}
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }

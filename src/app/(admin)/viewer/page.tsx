@@ -5,18 +5,15 @@ import { Metadata } from "next";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "Next.js Basic Table | APOLO - Next.js Dashboard Template",
-  description:
-    "This is Next.js Basic Table  page for APOLO  Tailwind CSS Admin Dashboard Template",
-  // other metadata
+  title: "Apolo - Viewers"
 };
 
 export default function BasicTables() {
   return (
     <div>
-      <PageBreadcrumb pageTitle="Basic Table" />
+      <PageBreadcrumb pageTitle="Viewers" />
       <div className="space-y-6">
-        <ComponentCard title="Basic Table 1">
+        <ComponentCard title="Listagem dos usuários viewers">
           <ViewTable />
         </ComponentCard>
       </div>
