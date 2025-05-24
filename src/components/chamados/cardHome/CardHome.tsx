@@ -72,11 +72,11 @@ const CardHome: React.FC<CardHomeProps> = ({ chamado }) => {
         )}
       </div>
       <h4 className="font-bold text-md text-gray-900 dark:text-gray-100 break-words">Título: {chamado.titulo}</h4>
-      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+      <div className="flex items-center gap-2 text-sm text-black-600 dark:text-gray-300">
         {getSentimentoEmoji(chamado.sentimento_cliente)}
         {chamado.tipo_importacao && (
           <>
-            <span>{chamado.tipo_importacao}</span>
+        <span className="font-bold">{chamado.tipo_importacao}</span>
           </>
         )}
 
