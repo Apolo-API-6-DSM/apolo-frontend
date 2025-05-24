@@ -1,6 +1,6 @@
 import ComponentCard from "@/components/common/ComponentCard";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import ViewTable from "@/components/tables/ViewTable";
+import UsuariosTable from "@/components/tables/ViewTable";
 import { Metadata } from "next";
 import React from "react";
 
@@ -14,7 +14,7 @@ export default function BasicTables() {
       <PageBreadcrumb pageTitle="Viewers" />
       <div className="space-y-6">
         <ComponentCard title="Listagem dos usuários viewers">
-          <ViewTable />
+          <UsuariosTable />
         </ComponentCard>
       </div>
     </div>

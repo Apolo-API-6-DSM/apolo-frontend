@@ -1,179 +1,163 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "../ui/table";
+import React, { useState, useEffect } from "react";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "../ui/table";
 import Badge from "../ui/badge/Badge";
 import Button from "../ui/button/Button";
+import { userService } from "@/services/user";
+import { auth } from "@/services/auth";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
-interface Viewer {
-  id: number;
-  name: string;
-  role: string;
+interface Usuario {
+  id: string;
+  nome: string;
+  papel: 'admin' | 'viewer';
   email: string;
   status: "ativo" | "inativo";
-  chamados: number;
-  lastActivity: string;
+  quantidadeChamados: number;
 }
 
-export default function ViewersTable() {
-  const [viewers, setViewers] = useState<Viewer[]>([
-    {
-      id: 1,
-      name: "Carlos Silva",
-      role: "Admin",
-      email: "carlos.silva@empresa.com",
-      status: "ativo",
-      chamados: 12,
-      lastActivity: "2023-05-15",
-    },
-    {
-      id: 2,
-      name: "Ana Oliveira",
-      role: "Viewer",
-      email: "ana.oliveira@empresa.com",
-      status: "ativo",
-      chamados: 8,
-      lastActivity: "2023-05-18",
-    },
-    {
-      id: 3,
-      name: "Pedro Santos",
-      role: "Viewer",
-      email: "pedro.santos@empresa.com",
-      status: "inativo",
-      chamados: 3,
-      lastActivity: "2023-04-28",
-    },
-    {
-      id: 4,
-      name: "Mariana Costa",
-      role: "Viewer",
-      email: "mariana.costa@empresa.com",
-      status: "ativo",
-      chamados: 15,
-      lastActivity: "2023-05-20",
-    },
-    {
-      id: 5,
-      name: "Rafael Pereira",
-      role: "Viewer",
-      email: "rafael.pereira@empresa.com",
-      status: "inativo",
-      chamados: 5,
-      lastActivity: "2023-05-10",
-    },
-   ]);
+export default function UsuariosTable() {
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const router = useRouter();
 
-  const toggleStatus = (id: number) => {
-    setViewers(prevViewers =>
-      prevViewers.map(viewer =>
-        viewer.id === id
-          ? {
-              ...viewer,
-              status: viewer.status === "ativo" ? "inativo" : "ativo",
-            }
-          : viewer
-      )
-    );
+  useEffect(() => {
+    const loadUsuarios = async () => {
+      try {
+        const userInfo = auth.getUserInfo();
+        if (!userInfo || userInfo.papel !== 'admin') {
+          router.push('/unauthorized');
+          return;
+        }
+
+        const data = await userService.listarUsuarios();
+        setUsuarios(data);
+      } catch (err) {
+        setError("Erro ao carregar lista de usuários");
+        console.error("Failed to load users:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUsuarios();
+  }, [router]);
+
+  // Função para processar os dados como no exemplo
+  const processData = (usuarios: Usuario[]) => {
+    // Aqui você pode adicionar processamento adicional se necessário
+    return usuarios;
   };
+
+  const toggleStatus = async (id: string) => {
+    try {
+      const updatedUser = await userService.toggleStatus(id);
+      setUsuarios(prevUsuarios =>
+        prevUsuarios.map(usuario =>
+          usuario.id === id
+            ? {
+                ...usuario,
+                status: updatedUser.status ? 'ativo' : 'inativo',
+              }
+            : usuario
+        )
+      );
+    } catch (err) {
+      console.error("Failed to toggle status:", err);
+      setError("Erro ao alterar status do usuário");
+    }
+  };
+
+  if (loading) {
+    return <div className="p-4">Carregando...</div>;
+  }
+
+  if (error) {
+    return <div className="p-4 text-red-500">{error}</div>;
+  }
+
+  const processedUsuarios = processData(usuarios);
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-      {/* Remova a div com overflow-x-auto e min-w-[1102px] */}
-      <Table className="w-full"> {/* Adicione w-full aqui */}
+      <Table className="w-full">
+        {/* Cabeçalho da tabela */}
         <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
           <TableRow>
-            <TableCell
-              isHeader
-              className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-            >
+            <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
               Nome
             </TableCell>
-            <TableCell
-              isHeader
-              className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-            >
+            <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
               Cargo
             </TableCell>
-            <TableCell
-              isHeader
-              className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-            >
+            <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
               E-mail
             </TableCell>
-            <TableCell
-              isHeader
-              className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-            >
+            <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
               Status
             </TableCell>
-            <TableCell
-              isHeader
-              className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-            >
+            <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
               Chamados
             </TableCell>
-            <TableCell
-              isHeader
-              className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-            >
-              Última Atividade
-            </TableCell>
-            <TableCell
-              isHeader
-              className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-            >
+            <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
               Ações
             </TableCell>
           </TableRow>
         </TableHeader>
 
+        {/* Corpo da tabela */}
         <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-          {viewers.map((viewer) => (
-            <TableRow key={viewer.id}>
+          {processedUsuarios.map((usuario) => (
+            <TableRow key={usuario.id}>
               <TableCell className="px-5 py-4 text-start">
                 <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                  {viewer.name}
+                  {usuario.nome}
                 </span>
-              </TableCell>
-              <TableCell className="px-5 py-4 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                {viewer.role}
-              </TableCell>
-              <TableCell className="px-5 py-4 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                {viewer.email}
               </TableCell>
               <TableCell className="px-5 py-4 text-start">
                 <Badge
                   size="sm"
-                  color={viewer.status === "ativo" ? "success" : "error"}
                 >
-                  {viewer.status === "ativo" ? "Ativo" : "Inativo"}
+                  {usuario.papel === 'admin' ? 'Administrador' : 'Visualizador'}
+                </Badge>
+              </TableCell>
+              <TableCell className="px-5 py-4 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                {usuario.email}
+              </TableCell>
+              <TableCell className="px-5 py-4 text-start">
+                <Badge
+                  size="sm"
+                  color={usuario.status === "ativo" ? "success" : "error"}
+                >
+                  {usuario.status === "ativo" ? "Ativo" : "Inativo"}
                 </Badge>
               </TableCell>
               <TableCell className="px-5 py-4 text-gray-800 text-theme-sm dark:text-white/90">
-                {viewer.chamados}
+                {usuario.quantidadeChamados}
               </TableCell>
-              <TableCell className="px-5 py-4 text-gray-500 text-theme-sm dark:text-gray-400">
-                {viewer.lastActivity}
-              </TableCell>
-              <TableCell className="px-5 py-4 text-start">
-                <Button
-                  variant="outline"
-                  onClick={() => toggleStatus(viewer.id)}
-                  className={
-                    viewer.status === "ativo"
-                      ? "border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      : "border-green-500 text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20"
-                  }
-                >
-                  {viewer.status === "ativo" ? "Desativar" : "Ativar"}
-                </Button>
+              <TableCell className="px-5 py-4 text-start space-x-2">
+                <Link href={`/viewer/${usuario.id}`} passHref>
+                  <Button variant="outline" size="sm">
+                    Ver Perfil
+                  </Button>
+                </Link>
+                {usuario.papel === 'viewer' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => toggleStatus(usuario.id)}
+                    className={
+                      usuario.status === "ativo"
+                        ? "border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        : "border-green-500 text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20"
+                    }
+                  >
+                    {usuario.status === "ativo" ? "Desativar" : "Ativar"}
+                  </Button>
+                )}
               </TableCell>
             </TableRow>
           ))}

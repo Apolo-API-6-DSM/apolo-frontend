@@ -33,5 +33,16 @@ export const auth = {
     } catch {
       return false;
     }
+  },
+  
+  getUserInfo: () => {
+    const token = auth.getToken();
+    if (!token) return null;
+    
+    try {
+      return JSON.parse(atob(token.split('.')[1]));
+    } catch {
+      return null;
+    }
   }
 };
