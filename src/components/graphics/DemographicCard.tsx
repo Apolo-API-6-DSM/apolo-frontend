@@ -9,7 +9,12 @@ export default function DemographicCard() {
   const [sentimentoData, setSentimentoData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+  const colorMap: Record<string, string> = {
+    Positivo: '#4CAF50',
+    Neutro: '#FFEB3B',
+    Negativo: '#F44336',
+  };
+  const colors = ['#2196F3', '#FF9800', '#9C27B0'];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -98,9 +103,10 @@ export default function DemographicCard() {
               fill="#8884d8"
               dataKey="value"
             >
-              {sentimentoData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
+              {sentimentoData.map((entry, index) => {
+                let color = colorMap[entry.name] || colors[index % colors.length];
+                return <Cell key={`cell-${index}`} fill={color} />;
+              })}
             </Pie>
             <Tooltip />
             <Legend />

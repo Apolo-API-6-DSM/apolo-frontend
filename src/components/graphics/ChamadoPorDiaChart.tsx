@@ -109,18 +109,31 @@ const ChamadoPorDiaChart = () => {
   // Gera as barras dinamicamente
   const renderBars = () => {
     if (data.length === 0) return null;
-    
-    const colors = ['#4CAF50', '#2196F3', '#F44336', '#FFC107', '#9C27B0', '#607D8B'];
+    // Cores padronizadas: positivo, neutro, negativo, concluído, outros
+    const colorMap: Record<string, string> = {
+      Concluido: '#2196F3',
+      Concluído: '#2196F3',
+      Aberto: '#FF9800',
+      Pendente: '#9C27B0',
+      Outros: '#9C27B0',
+      Positivo: '#4CAF50',
+      Neutro: '#FFEB3B',
+      Negativo: '#F44336',
+    };
+    const defaultColors = ['#2196F3', '#FF9800', '#9C27B0'];
     const entries = Object.entries(data[0]).filter(([key]) => key !== 'data');
-    
-    return entries.map(([key, _], index) => (
-      <Bar 
-        key={key}
-        dataKey={key}
-        fill={colors[index % colors.length]}
-        name={key.replace(/_/g, ' ')}
-      />
-    ));
+    return entries.map(([key, _], index) => {
+      const nome = key.replace(/_/g, ' ');
+      const cor = colorMap[nome] || defaultColors[index % defaultColors.length];
+      return (
+        <Bar 
+          key={key}
+          dataKey={key}
+          fill={cor}
+          name={nome}
+        />
+      );
+    });
   };
 
   if (isLoading) {

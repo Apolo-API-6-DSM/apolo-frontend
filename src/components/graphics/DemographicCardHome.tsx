@@ -7,7 +7,17 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recha
 export default function DemographicCardHome() {
   const [sentimentoData, setSentimentoData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+  const colorMap: Record<string, string> = {
+    Concluido: '#2196F3',
+    Concluído: '#2196F3',
+    Aberto: '#FF9800',
+    Pendente: '#9C27B0',
+    Outros: '#9C27B0',
+    Positivo: '#4CAF50',
+    Neutro: '#FFEB3B',
+    Negativo: '#F44336',
+  };
+  const COLORS = ['#2196F3', '#FF9800', '#9C27B0'];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,9 +66,10 @@ export default function DemographicCardHome() {
             dataKey="value"
             label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
           >
-            {sentimentoData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
+            {sentimentoData.map((entry, index) => {
+              let color = colorMap[entry.name] || COLORS[index % COLORS.length];
+              return <Cell key={`cell-${index}`} fill={color} />;
+            })}
           </Pie>
           <Legend 
             layout="horizontal"

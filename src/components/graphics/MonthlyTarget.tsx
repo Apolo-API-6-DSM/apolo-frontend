@@ -9,7 +9,18 @@ export default function MonthlyTarget() {
   const [statusData, setStatusData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+  // Cores padronizadas para status
+  const colorMap: Record<string, string> = {
+    Concluido: '#2196F3',
+    Concluído: '#2196F3',
+    Aberto: '#FF9800',
+    Pendente: '#9C27B0',
+    Outros: '#9C27B0',
+    Positivo: '#4CAF50',
+    Neutro: '#FFEB3B',
+    Negativo: '#F44336',
+  };
+  const defaultColors = ['#2196F3', '#FF9800', '#9C27B0'];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -91,9 +102,13 @@ export default function MonthlyTarget() {
             <Tooltip />
             <Legend />
             <Bar dataKey="value" name="Quantidade" fill="#3182ce">
-              {statusData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
+              {statusData.map((entry, index) => {
+                let cor = colorMap[entry.name];
+                if (!cor && entry.name.toLowerCase().includes('conclu')) cor = '#2196F3';
+                if (!cor && entry.name.toLowerCase().includes('abert')) cor = '#FF9800';
+                if (!cor) cor = defaultColors[index % defaultColors.length];
+                return <Cell key={`cell-${index}`} fill={cor} />;
+              })}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
