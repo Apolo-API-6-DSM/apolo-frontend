@@ -5,22 +5,19 @@ import { fetchTickets, Chamado } from '@/services/service';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useDashboardDate } from './DashboardDateContext';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { useDashboardDate } from './DashboardDateContext';
 
 const ChamadoPorDiaChart = () => {
   const [data, setData] = useState<any[]>([]);
   const [allChamados, setAllChamados] = useState<Chamado[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { selectedDate } = useDashboardDate();
-  const [dataLocal, setDataLocal] = useState<Date>(selectedDate ?? new Date());
+  const { selectedRange } = useDashboardDate();
 
-  // Sincroniza data local com a global apenas quando selectedDate muda
-  useEffect(() => {
-    if (selectedDate) setDataLocal(selectedDate);
-  }, [selectedDate]);
+  // Adiciona novamente o DatePicker local para filtro específico
+  const [dataLocal, setDataLocal] = useState<Date>(selectedRange.start ?? new Date());
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,10 +42,14 @@ const ChamadoPorDiaChart = () => {
   }, []);
 
   useEffect(() => {
-    if (allChamados.length > 0 && dataLocal) {
-      processChartData(allChamados, dataLocal);
+    if (allChamados.length > 0 && selectedRange.start) {
+      processChartData(allChamados, selectedRange.start, selectedRange.end);
     }
-  }, [allChamados, dataLocal]);
+  }, [allChamados, selectedRange]);
+
+  useEffect(() => {
+    if (selectedRange.start) setDataLocal(selectedRange.start);
+  }, [selectedRange]);
 
   const formatTipoDocumento = (tipo: string): string => {
     if (!tipo) return 'Outros';
@@ -65,20 +66,21 @@ const ChamadoPorDiaChart = () => {
     return tipo.charAt(0).toUpperCase() + tipo.slice(1);
   };
 
-  const processChartData = (chamados: Chamado[], date: Date) => {
-    const targetDate = format(date, 'yyyy-MM-dd');
+  const processChartData = (chamados: Chamado[], start: Date, end: Date | null) => {
+    const startDate = format(start, 'yyyy-MM-dd');
+    const endDate = end ? format(end, 'yyyy-MM-dd') : startDate;
     
-    // Filtra chamados do dia selecionado
-    const chamadosDoDia = chamados.filter(chamado => {
+    // Filtra chamados pelo intervalo de datas
+    const chamadosNoIntervalo = chamados.filter(chamado => {
       if (!chamado.data_abertura) return false;
       const chamadoDate = format(parseISO(chamado.data_abertura), 'yyyy-MM-dd');
-      return chamadoDate === targetDate;
+      return chamadoDate >= startDate && chamadoDate <= endDate;
     });
 
     // Conta tipos de documento dinamicamente
     const contagem: Record<string, number> = {};
 
-    chamadosDoDia.forEach(chamado => {
+    chamadosNoIntervalo.forEach(chamado => {
       const tipo = formatTipoDocumento(chamado.tipo_documento || '');
       contagem[tipo] = (contagem[tipo] || 0) + 1;
     });
@@ -93,17 +95,13 @@ const ChamadoPorDiaChart = () => {
     chartData.sort((a, b) => b.value - a.value);
 
     setData([{
-      data: format(date, 'dd/MM/yyyy'),
+      data: end ? `${format(start, 'dd/MM/yyyy')} - ${format(end, 'dd/MM/yyyy')}` : format(start, 'dd/MM/yyyy'),
       ...chartData.reduce((acc, item) => {
         // Substitui espaços por underscore para usar como chave
         const key = item.name.replace(/\s+/g, '_');
         return { ...acc, [key]: item.value };
       }, {})
     }]);
-  };
-
-  const handleDateChange = (date: Date | null) => {
-    setDataLocal(date ?? new Date());
   };
 
   // Gera as barras dinamicamente
@@ -171,7 +169,6 @@ const ChamadoPorDiaChart = () => {
           />
         </div>
       </div>
-      
       {data.length > 0 ? (
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">

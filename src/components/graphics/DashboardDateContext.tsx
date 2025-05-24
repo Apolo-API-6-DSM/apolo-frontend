@@ -1,16 +1,18 @@
 import React, { createContext, useContext, useState } from "react";
 
+type DashboardDateRange = { start: Date | null; end: Date | null };
+
 type DashboardDateContextType = {
-  selectedDate: Date | null;
-  setSelectedDate: (date: Date | null) => void;
+  selectedRange: DashboardDateRange;
+  setSelectedRange: (range: DashboardDateRange) => void;
 };
 
 const DashboardDateContext = createContext<DashboardDateContextType | undefined>(undefined);
 
 export const DashboardDateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const [selectedRange, setSelectedRange] = useState<DashboardDateRange>({ start: new Date(), end: null });
   return (
-    <DashboardDateContext.Provider value={{ selectedDate, setSelectedDate }}>
+    <DashboardDateContext.Provider value={{ selectedRange, setSelectedRange }}>
       {children}
     </DashboardDateContext.Provider>
   );
