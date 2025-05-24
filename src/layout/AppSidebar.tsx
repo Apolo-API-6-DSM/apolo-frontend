@@ -54,6 +54,14 @@ const navItems: NavItem[] = [
     name: "Meu Usuário",
     path: "/profile",
   },
+  {
+    icon: <ListIcon />,
+    name: "Viewers",
+    subItems: [
+      { name: "Listagem", path: "/viewer", pro: false },
+      { name: "Cadastro", path: "/viewer/cadastro", pro: false },
+    ],
+  },
 ];
 
 const othersItems: NavItem[] = [
