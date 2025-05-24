@@ -63,7 +63,7 @@ export default function ResponsaveisAtivosCard() {
     return (
         <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2">
             <h3 className="text-sm dark:text-white font-medium text-gray-500">Responsáveis Ativos</h3>
-            <p className="text-3xl font-bold text-red-600 dark:text-red-400">{totalResponsaveis}</p>
+            <p className="text-3xl font-bold text-black-600 dark:text-red-400">{totalResponsaveis}</p>
         </div>
     );
 }

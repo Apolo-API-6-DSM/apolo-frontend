@@ -77,7 +77,7 @@ const CardChamados: React.FC<CardChamadosProps> = ({ chamado }) => {
   
             <div className="flex items-center gap-1">
               <FaCommentDots className={getIconColor()} />
-              <span className="text-gray-700 dark:text-gray-300">{chamado.tipo}</span>
+                <span className="text-black-700 dark:text-gray-300 font-bold">{chamado.tipo}</span>
             </div>
   
             <div className="flex items-center gap-1">

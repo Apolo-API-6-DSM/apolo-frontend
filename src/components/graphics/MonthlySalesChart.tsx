@@ -3,12 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import { fetchTickets, Chamado } from '@/services/service';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { format, parseISO, startOfDay, endOfDay, startOfWeek, endOfWeek, 
-  startOfMonth, endOfMonth, startOfYear, endOfYear, addDays, addMonths, 
-  eachDayOfInterval, eachWeekOfInterval, eachMonthOfInterval, isSameMonth } from 'date-fns';
+import {
+  format, parseISO, startOfDay, endOfDay, startOfWeek, endOfWeek,
+  startOfMonth, endOfMonth, startOfYear, endOfYear, addDays, addMonths,
+  eachDayOfInterval, eachWeekOfInterval, eachMonthOfInterval, isSameMonth
+} from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useDashboardDate } from "@/components/graphics/DashboardDateContext";
 import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 
 type Periodo = 'dia' | 'semana' | 'mes' | 'trimestre' | 'ano';
 
@@ -18,9 +20,17 @@ export default function MonthlySalesChart() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [periodo, setPeriodo] = useState<Periodo>('semana');
-  const [dataSelecionada, setDataSelecionada] = useState<Date>(new Date());
   const [dataInicio, setDataInicio] = useState<Date>(new Date());
   const [dataFim, setDataFim] = useState<Date>(new Date());
+  const { selectedRange } = useDashboardDate(); // usa o filtro global
+
+  // Sincroniza intervalo local com o global
+  useEffect(() => {
+    if (selectedRange.start) {
+      setDataInicio(selectedRange.start);
+      setDataFim(selectedRange.end ?? selectedRange.start);
+    }
+  }, [selectedRange]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,37 +58,44 @@ export default function MonthlySalesChart() {
     if (allChamados.length > 0) {
       atualizarIntervaloDatas();
     }
-  }, [allChamados, periodo, dataSelecionada]);
+  }, [allChamados, periodo]); // usa dataLocal
 
   const atualizarIntervaloDatas = () => {
-    switch(periodo) {
+    const safeDate = dataInicio ?? new Date();
+    switch (periodo) {
       case 'dia':
-        setDataInicio(startOfDay(dataSelecionada));
-        setDataFim(endOfDay(dataSelecionada));
+        setDataInicio(startOfDay(safeDate));
+        setDataFim(endOfDay(safeDate));
         break;
       case 'semana':
-        setDataInicio(startOfWeek(dataSelecionada, { locale: ptBR }));
-        setDataFim(endOfWeek(dataSelecionada, { locale: ptBR }));
+        setDataInicio(startOfWeek(safeDate, { locale: ptBR }));
+        setDataFim(endOfWeek(safeDate, { locale: ptBR }));
         break;
       case 'mes':
-        setDataInicio(startOfMonth(dataSelecionada));
-        setDataFim(endOfMonth(dataSelecionada));
+        setDataInicio(startOfMonth(safeDate));
+        setDataFim(endOfMonth(safeDate));
         break;
       case 'trimestre':
-        setDataInicio(startOfMonth(dataSelecionada));
-        setDataFim(endOfMonth(addMonths(dataSelecionada, 2)));
+        setDataInicio(startOfMonth(safeDate));
+        setDataFim(endOfMonth(addMonths(safeDate, 2)));
         break;
       case 'ano':
-        setDataInicio(startOfYear(dataSelecionada));
-        setDataFim(endOfYear(dataSelecionada));
+        setDataInicio(startOfYear(safeDate));
+        setDataFim(endOfYear(safeDate));
         break;
     }
-    processTrafficData();
+    // Removido: processTrafficData();
   };
+
+  // Novo useEffect para processar os dados após atualização dos intervalos
+  useEffect(() => {
+    if (allChamados.length > 0 && dataInicio && dataFim) {
+      processTrafficData();
+    }
+  }, [allChamados, dataInicio, dataFim, periodo]);
 
   const handlePeriodoChange = (novoPeriodo: Periodo) => {
     setPeriodo(novoPeriodo);
-    // Mantém a data selecionada, apenas atualiza o intervalo
     atualizarIntervaloDatas();
   };
 
@@ -109,27 +126,40 @@ export default function MonthlySalesChart() {
         name: hora,
         value: horas[hora]
       }));
+    } else if (periodo === 'semana' || periodo === 'mes') {
+      // Cria todos os dias do intervalo, mesmo sem chamados
+      let intervalos: Date[] = eachDayOfInterval({ start: dataInicio, end: dataFim });
+      // Força o nome do dia para sempre mostrar 3 letras e a data, ex: 'Seg (13/05)'.
+      let nomeIntervalo = (date: Date) => {
+        const diaSemana = format(date, 'EEE', { locale: ptBR });
+        const diaSemanaCorrigido = diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1, 3).toLowerCase();
+        return `${diaSemanaCorrigido} (${format(date, 'dd/MM')})`;
+      };
+      dataFormatada = intervalos.map(intervalo => {
+        const inicio = startOfDay(intervalo);
+        const fim = endOfDay(intervalo);
+        const count = chamadosFiltrados.filter(chamado => {
+          if (!chamado.data_abertura) return false;
+          const dataChamado = parseISO(chamado.data_abertura);
+          return dataChamado >= inicio && dataChamado <= fim;
+        }).length;
+        return {
+          name: nomeIntervalo(intervalo),
+          value: count,
+          date: intervalo
+        };
+      });
     } else {
       // Cria intervalos conforme o período selecionado
       let intervalos: Date[] = [];
       let formato: string;
       let nomeIntervalo: (date: Date) => string;
 
-      switch(periodo) {
-        case 'semana':
-          intervalos = eachDayOfInterval({ start: dataInicio, end: dataFim });
-          formato = 'EEE'; // Dia da semana abreviado
-          nomeIntervalo = (date) => format(date, 'EEE (dd/MM)', { locale: ptBR });
-          break;
-        case 'mes':
-          intervalos = eachDayOfInterval({ start: dataInicio, end: dataFim });
-          formato = 'dd/MM'; // Dia e mês
-          nomeIntervalo = (date) => format(date, 'dd/MM');
-          break;
+      switch (periodo) {
         case 'trimestre':
-          intervalos = eachMonthOfInterval({ 
-            start: dataInicio, 
-            end: dataFim 
+          intervalos = eachMonthOfInterval({
+            start: dataInicio,
+            end: dataFim
           });
           formato = 'MMM'; // Mês abreviado
           nomeIntervalo = (date) => format(date, 'MMM/yyyy', { locale: ptBR });
@@ -145,20 +175,13 @@ export default function MonthlySalesChart() {
 
       // Conta chamados por intervalo
       dataFormatada = intervalos.map(intervalo => {
-        const inicio = periodo === 'dia' ? startOfDay(intervalo) : 
-                      periodo === 'semana' || periodo === 'mes' ? startOfDay(intervalo) :
-                      startOfMonth(intervalo);
-        
-        const fim = periodo === 'dia' ? endOfDay(intervalo) : 
-                   periodo === 'semana' || periodo === 'mes' ? endOfDay(intervalo) : 
-                   endOfMonth(intervalo);
-
+        const inicio = startOfMonth(intervalo);
+        const fim = endOfMonth(intervalo);
         const count = chamadosFiltrados.filter(chamado => {
           if (!chamado.data_abertura) return false;
           const dataChamado = parseISO(chamado.data_abertura);
           return dataChamado >= inicio && dataChamado <= fim;
         }).length;
-
         return {
           name: nomeIntervalo(intervalo),
           value: count,
@@ -170,94 +193,21 @@ export default function MonthlySalesChart() {
     setTrafficData(dataFormatada);
   };
 
-// Adicione estas classes ao seu componente
-const renderDatePicker = () => {
-  const pickerClasses = "bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full max-w-[180px]";
-  const wrapperClasses = "flex items-center gap-6 flex-wrap";
+  // Adiciona o DatePicker local para filtro de data, mas sincroniza com o filtro global
+  const [dataInicioLocal, setDataInicioLocal] = useState<Date>(selectedRange.start ?? new Date());
+  const [dataFimLocal, setDataFimLocal] = useState<Date>(selectedRange.end ?? new Date());
 
-  return (
-    <div className={`${wrapperClasses} dark:text-white`}>
-      {periodo === 'dia' && (
-        <>
-          <span>Dia:</span>
-          <DatePicker
-            selected={dataSelecionada}
-            onChange={(date) => setDataSelecionada(date || new Date())}
-            dateFormat="dd/MM/yyyy"
-            className={`${pickerClasses} dark:text-white`}
-            popperClassName="!z-50 w-full max-w-[280px]"
-            locale={ptBR}
-          />
-        </>
-      )}
+  useEffect(() => {
+    if (selectedRange.start) setDataInicioLocal(selectedRange.start);
+    if (selectedRange.end) setDataFimLocal(selectedRange.end);
+  }, [selectedRange]);
 
-      {periodo === 'semana' && (
-        <>
-          <span className='dark:text-white'>Semana começando em:</span>
-          <DatePicker
-            selected={dataSelecionada}
-            onChange={(date) => setDataSelecionada(date || new Date())}
-            dateFormat="dd/MM/yyyy"
-            className={`${pickerClasses} dark:text-white`}
-            popperClassName="!z-50 w-full max-w-[280px]"
-            locale={ptBR}
-          />
-          <span className="text-sm text-black dark:text-white">
-            {format(dataInicio, 'dd/MM')} a {format(dataFim, 'dd/MM/yyyy')}
-          </span>
-        </>
-      )}
-
-      {periodo === 'mes' && (
-        <>
-          <span>Mês:</span>
-          <DatePicker
-            selected={dataSelecionada}
-            onChange={(date) => setDataSelecionada(date || new Date())}
-            dateFormat="MM/yyyy"
-            showMonthYearPicker
-            className={`${pickerClasses} dark:text-white`}
-            popperClassName="!z-50 w-full max-w-[280px]"
-            locale={ptBR}
-          />
-        </>
-      )}
-
-      {periodo === 'trimestre' && (
-        <>
-          <span>Trimestre começando em:</span>
-          <DatePicker
-            selected={dataSelecionada}
-            onChange={(date) => setDataSelecionada(date || new Date())}
-            dateFormat="MM/yyyy"
-            showMonthYearPicker
-            className={`${pickerClasses} dark:text-white`}
-            popperClassName="!z-50 w-full max-w-[280px]"
-            locale={ptBR}
-          />
-          <span className="text-sm text-black dark:text-white">
-            {format(dataInicio, 'MMM/yyyy', { locale: ptBR })} a {format(dataFim, 'MMM/yyyy', { locale: ptBR })}
-          </span>
-        </>
-      )}
-
-      {periodo === 'ano' && (
-        <>
-          <span>Ano:</span>
-          <DatePicker
-            selected={dataSelecionada}
-            onChange={(date) => setDataSelecionada(date || new Date())}
-            dateFormat="yyyy"
-            showYearPicker
-            className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-[90px]"
-            popperClassName="!z-50 w-full max-w-[280px]"
-            locale={ptBR}
-          />
-        </>
-      )}
-    </div>
-  );
-};
+  useEffect(() => {
+    if (allChamados.length > 0 && dataInicioLocal && dataFimLocal) {
+      setDataInicio(dataInicioLocal);
+      setDataFim(dataFimLocal);
+    }
+  }, [allChamados, dataInicioLocal, dataFimLocal]);
 
   if (isLoading) {
     return (
@@ -279,26 +229,44 @@ const renderDatePicker = () => {
     );
   }
 
+  // Adiciona o select de período novamente
   return (
     <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2">
       <div className="flex justify-between items-center mb-2">
         <h3 className="text-lg dark:text-white font-medium">Tráfego de Chamados</h3>
-        <div className="flex items-center gap-2">
-          <select 
-            value={periodo}
-            onChange={(e) => handlePeriodoChange(e.target.value as Periodo)}
-            className="bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="dia">Dia</option>
-            <option value="semana">Semana</option>
-            <option value="mes">Mês</option>
-            <option value="trimestre">Trimestre</option>
-            <option value="ano">Ano</option>
-          </select>
-          {renderDatePicker()}
-        </div>
+        <div className="flex items-center gap-2 -translate-x-10">
+          <div className="flex gap-4">
+            <div className="flex flex-col">
+              <label className="text-xs mb-1 text-gray-600 dark:text-gray-300">Início</label>
+              <DatePicker
+                selected={dataInicioLocal}
+                onChange={date => setDataInicioLocal(date ?? new Date())}
+                showTimeSelect
+                timeFormat="HH:mm"
+                timeIntervals={15}
+                dateFormat="dd/MM/yyyy HH:mm"
+                className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-"
+                locale={ptBR}
+                maxDate={new Date()}
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-xs mb-1 text-gray-600 dark:text-gray-300">Fim</label>
+              <DatePicker
+                selected={dataFimLocal}
+                onChange={date => setDataFimLocal(date ?? new Date())}
+                showTimeSelect
+                timeFormat="HH:mm"
+                timeIntervals={15}
+                dateFormat="dd/MM/yyyy HH:mm"
+                className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-52"
+                locale={ptBR}
+                maxDate={new Date()}
+              />
+            </div>
+          </div>
+        </div>  
       </div>
-
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
@@ -310,12 +278,12 @@ const renderDatePicker = () => {
             <YAxis />
             <Tooltip />
             <Legend />
-            <Line 
-              type="monotone" 
-              dataKey="value" 
-              stroke="#3182ce" 
-              name="Chamados" 
-              activeDot={{ r: 8 }} 
+            <Line
+              type="monotone"
+              dataKey="value"
+              stroke="#2196F3"
+              name="Chamados"
+              activeDot={{ r: 8 }}
             />
           </LineChart>
         </ResponsiveContainer>
