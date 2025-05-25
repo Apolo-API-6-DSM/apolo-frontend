@@ -6,7 +6,7 @@ interface Usuario {
   nome: string;
   email: string;
   senha?: string;
-  perfil: "admin" | "viewer";
+  papel: "admin" | "viewer";
   status: "ativo" | "inativo";
 }
 
@@ -40,7 +40,7 @@ const AtualizacaoUsuario: React.FC<Props> = ({ dadosIniciais, onSubmit }) => {
         <input
           type="text"
           name="nome"
-          placeholder="Nome"
+          placeholder="Nome:"
           value={usuario.nome}
           onChange={handleChange}
           className="w-full p-2 border border-gray-300 rounded-md bg-white shadow"
@@ -49,7 +49,7 @@ const AtualizacaoUsuario: React.FC<Props> = ({ dadosIniciais, onSubmit }) => {
         <input
           type="email"
           name="email"
-          placeholder="Email"
+          placeholder="Email:"
           value={usuario.email}
           onChange={handleChange}
           className="w-full p-2 border border-gray-300 rounded-md bg-white shadow"
@@ -58,14 +58,14 @@ const AtualizacaoUsuario: React.FC<Props> = ({ dadosIniciais, onSubmit }) => {
         <input
           type="password"
           name="senha"
-          placeholder="Senha (opcional)"
+          placeholder="Senha (opcional):"
           value={usuario.senha || ""}
           onChange={handleChange}
           className="w-full p-2 border border-gray-300 rounded-md bg-white shadow"
         />
         <select
-          name="perfil"
-          value={usuario.perfil}
+          name="papel"
+          value={usuario.papel}
           onChange={handleChange}
           className="w-full p-2 border border-gray-300 rounded-md bg-white shadow"
         >

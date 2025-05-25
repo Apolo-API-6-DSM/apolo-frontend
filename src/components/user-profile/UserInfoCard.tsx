@@ -24,7 +24,7 @@ export default function UserInfoCard() {
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
             <div>
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Nome
+                Nome:
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                 Admin
@@ -33,7 +33,7 @@ export default function UserInfoCard() {
 
             <div>
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Email
+                Email:
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                 admin@gmail.com
@@ -42,7 +42,7 @@ export default function UserInfoCard() {
 
             <div>
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Telefone
+                Telefone:
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                 +55 (12)4002-8922
@@ -51,7 +51,7 @@ export default function UserInfoCard() {
 
             <div>
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Bio
+                Biografia:
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                 Proprietário
@@ -99,22 +99,22 @@ export default function UserInfoCard() {
 
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>Nome</Label>
+                    <Label>Nome:</Label>
                     <Input type="text" defaultValue="Admin" />
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>Email</Label>
+                    <Label>Email:</Label>
                     <Input type="text" defaultValue="admin@gmail.com" />
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>Telefone</Label>
+                    <Label>Telefone:</Label>
                     <Input type="text" defaultValue="+55 (12)4002-8922" />
                   </div>
 
                   <div className="col-span-2">
-                    <Label>Bio</Label>
+                    <Label>Biografia:</Label>
                     <Input type="text" defaultValue="Proprietário" />
                   </div>
                 </div>

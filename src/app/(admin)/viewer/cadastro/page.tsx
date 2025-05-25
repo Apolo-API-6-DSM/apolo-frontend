@@ -13,7 +13,7 @@ interface Usuario {
   nome: string;
   email: string;
   senha: string;
-  perfil: "admin" | "viewer";
+  papel: "admin" | "viewer";
 }
 
 interface Props {
@@ -25,14 +25,14 @@ const CadastroUsuarioPage = ({ onSubmit }: Props) => {
     nome: "",
     email: "",
     senha: "",
-    perfil: "viewer",
+    papel: "viewer",
   });
 
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [senhaVisivel, setSenhaVisivel] = useState(false);
   const { isOpen, openModal, closeModal } = useModal(false);
 
-  const perfis = [
+  const papeis = [
     { value: "viewer", label: "Viewer (Apenas visualização)" },
     { value: "admin", label: "Admin (Acesso completo)" },
   ];
@@ -43,7 +43,7 @@ const CadastroUsuarioPage = ({ onSubmit }: Props) => {
   };
 
   const handleSelectChange = (value: string) => {
-    setUsuario(prev => ({ ...prev, perfil: value as "admin" | "viewer" }));
+    setUsuario(prev => ({ ...prev, papel: value as "admin" | "viewer" }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -68,20 +68,20 @@ const CadastroUsuarioPage = ({ onSubmit }: Props) => {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {/* Nome Completo */}
             <div>
-              <Label>Nome Completo</Label>
+              <Label>Nome Completo:</Label>
               <Input
                 name="nome"
                 type="text"
                 placeholder="Digite o nome completo"
                 onChange={handleChange}
                 className="w-full dark:bg-gray-800 dark:border-gray-700"
-                
+
               />
             </div>
 
             {/* Email */}
             <div>
-              <Label >E-mail</Label>
+              <Label >E-mail:</Label>
               <Input
                 name="email"
                 type="email"
@@ -93,7 +93,7 @@ const CadastroUsuarioPage = ({ onSubmit }: Props) => {
 
             {/* Senha */}
             <div>
-              <Label >Senha</Label>
+              <Label >Senha:</Label>
               <div className="relative">
                 <Input
                   name="senha"
@@ -118,7 +118,7 @@ const CadastroUsuarioPage = ({ onSubmit }: Props) => {
 
             {/* Confirmar Senha */}
             <div>
-              <Label >Confirmar Senha</Label>
+              <Label >Confirmar Senha:</Label>
               <div className="relative">
                 <Input
                   type={senhaVisivel ? "text" : "password"}
@@ -140,6 +140,19 @@ const CadastroUsuarioPage = ({ onSubmit }: Props) => {
               </div>
             </div>
 
+            <div>
+              <Label>Perfil:</Label>
+              <select
+                name="perfil"
+                value={usuario.papel}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded-md bg-white shadow dark:bg-gray-800 dark:border-gray-700"
+              >
+                <option value="viewer">Viewer</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+
           </div>
 
           <div className="flex justify-end pt-4">
@@ -156,7 +169,7 @@ const CadastroUsuarioPage = ({ onSubmit }: Props) => {
       <Modal isOpen={isOpen} onClose={closeModal} className="max-w-md">
         <div className="p-5 text-center">
           <h4 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
-            Senhas não coincidem
+            Senhas não coincidem!
           </h4>
           <p className="mb-6 text-gray-600 dark:text-gray-400">
             As senhas digitadas não são iguais. Por favor, verifique e tente novamente.

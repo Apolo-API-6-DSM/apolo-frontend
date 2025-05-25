@@ -33,7 +33,7 @@ const Login = () => {
                     <form onSubmit={handleLogin} className="space-y-5">
                         <div>
                             <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Email
+                                Email:
                             </label>
                             <input
                                 id="email"
@@ -48,7 +48,7 @@ const Login = () => {
                         
                         <div>
                             <label htmlFor="senha" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Senha
+                                Senha:
                             </label>
                             <input
                                 id="senha"

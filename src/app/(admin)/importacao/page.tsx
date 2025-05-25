@@ -25,15 +25,15 @@ export default function ImportacaoPage() {
     let isValid = true;
 
     if (!fileName.trim()) {
-      newErrors.fileName = 'O nome do arquivo é obrigatório';
+      newErrors.fileName = 'O nome do arquivo é obrigatório!';
       isValid = false;
     }
 
     if (!selectedFile) {
-      newErrors.file = 'Selecione um arquivo para importar';
+      newErrors.file = 'Selecione um arquivo para importar:';
       isValid = false;
     } else if (!(selectedFile.type === 'text/csv' || selectedFile.name.endsWith('.csv'))) {
-      newErrors.file = 'O arquivo deve ser do tipo CSV';
+      newErrors.file = 'O arquivo deve ser do tipo CSV.';
       isValid = false;
     }
 
@@ -126,7 +126,7 @@ export default function ImportacaoPage() {
       setSelectedFile(file);
       setErrors(prev => ({ ...prev, file: '' }));
     } else {
-      setErrors(prev => ({ ...prev, file: 'O arquivo deve ser do tipo CSV' }));
+      setErrors(prev => ({ ...prev, file: 'O arquivo deve ser do tipo CSV.' }));
     }
   }, []);
 
@@ -137,7 +137,7 @@ export default function ImportacaoPage() {
       setErrors(prev => ({ ...prev, file: '' }));
     } else {
       setSelectedFile(null);
-      setErrors(prev => ({ ...prev, file: 'O arquivo deve ser do tipo CSV' }));
+      setErrors(prev => ({ ...prev, file: 'O arquivo deve ser do tipo CSV.' }));
     }
   };
 
@@ -156,7 +156,7 @@ export default function ImportacaoPage() {
       <div className="space-y-6">
         <div>
           <label htmlFor="source-select" className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-            Selecione a fonte de importação
+            Selecione a fonte de importação:
           </label>
           <select 
             id="source-select" 
@@ -214,14 +214,14 @@ export default function ImportacaoPage() {
             ) : (
               <>
                 <p className="text-gray-600 dark:text-gray-400">
-                  Arraste e solte seu arquivo CSV aqui
+                  Arraste e solte seu arquivo CSV aqui.
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-500">ou</p>
               </>
             )}
             
             <label className="cursor-pointer inline-flex items-center justify-center gap-2 rounded-full border border-transparent bg-[#00163B] px-4 py-2 text-sm font-medium text-white shadow-theme-xs hover:bg-[#001e4f] dark:bg-blue-700 dark:hover:bg-blue-800">
-              Selecione um arquivo
+              Selecione um arquivo:
               <input
                 type="file"
                 accept=".csv"

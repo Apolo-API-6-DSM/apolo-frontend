@@ -14,7 +14,7 @@ const formatDate = (dateString: string | null | undefined) => {
 
   try {
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "Data inválida";
+    if (isNaN(date.getTime())) return "Data inválida!";
 
     return date.toLocaleDateString("pt-BR", {
       day: "2-digit",
@@ -29,7 +29,7 @@ const formatDate = (dateString: string | null | undefined) => {
 };
 
 const cleanMessage = (text: string) => {
-  if (!text) return "Nenhuma mensagem disponível";
+  if (!text) return "Nenhuma mensagem disponível.";
 
   try {
     return text

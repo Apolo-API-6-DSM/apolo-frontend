@@ -53,7 +53,7 @@ const CardChamados: React.FC<CardChamadosProps> = ({ chamado }) => {
       const lowerStatus = status.toLowerCase();
       if (lowerStatus === 'aberto' || lowerStatus === 'em andamento') return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300';
       if (lowerStatus === 'pendente' || lowerStatus === 'aguardando pelo suporte' || lowerStatus === 'itens pendentes') return 'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300';
-      if (lowerStatus === 'concluido' || lowerStatus === 'concluído' || lowerStatus === 'concluída' || lowerStatus === 'resolvido' || lowerStatus === 'fechado') return 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300';
+      if (lowerStatus === 'concluído' || lowerStatus === 'concluída' || lowerStatus === 'resolvido' || lowerStatus === 'fechado') return 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300';
       return 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300'; // Default
     };
   

@@ -23,7 +23,7 @@ const Login = () => {
                     <form onSubmit={handleLogin} className="flex flex-col items-center space-y-4">
                         <input
                             type="email"
-                            placeholder="email"
+                            placeholder="Email:"
                             className="w-[464px] p-2 border border-gray-300 rounded-md bg-white shadow"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -31,7 +31,7 @@ const Login = () => {
                         />
                         <input
                             type="password"
-                            placeholder="senha"
+                            placeholder="Senha:"
                             className="w-[464px] p-2 border border-gray-300 rounded-md bg-white shadow"
                             value={senha}
                             onChange={(e) => setSenha(e.target.value)}
