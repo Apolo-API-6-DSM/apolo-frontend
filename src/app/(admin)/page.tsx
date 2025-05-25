@@ -40,7 +40,7 @@ export default function Ecommerce() {
       try {
         const response = await fetch(`${API_BASE_URL}/chamados?_sort=data_abertura&_order=desc&_limit=5`);
         if (!response.ok) {
-          throw new Error('Erro ao carregar os últimos chamados');
+          throw new Error('Erro ao carregar os últimos chamados.');
         }
         const data: Chamado[] = await response.json();
         const ultimosCincoChamados = data.slice(0, 5); // Garante que apenas os últimos cinco sejam usados

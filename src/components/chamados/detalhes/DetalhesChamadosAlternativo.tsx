@@ -49,6 +49,37 @@ const DetalhesChamadoAlternativo: React.FC<DetalhesChamadoProps> = ({ chamado })
   ? `${formatDate(chamado.data_abertura)} - ${formatDate(chamado.ultima_atualizacao)}`
   : formatDate(chamado.data_abertura);
 
+  const normalizeStatus = (status: string | undefined): string => {
+    if (!status) return "Sem status";
+
+    const normalized = status
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toUpperCase();
+
+    if (normalized === "CONCLUIDO") return "Concluído";
+    if (normalized === "EM ABERTO") return "Em aberto";
+    return status;
+  };
+
+  const getStatusColorClass = (status: string | undefined): string => {
+    const s = status
+      ?.normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toUpperCase()
+      .trim();
+
+    if (s === "EM ABERTO") {
+      return "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300";
+    }
+
+    if (s === "CONCLUIDO") {
+      return "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300";
+    }
+
+    return "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300";
+  };
+
   const getSentimentoEmoji = (sentimento?: string) => {
     if (!sentimento || typeof sentimento !== 'string') {
       return <FaSmile className="text-gray-500 dark:text-gray-400 w-5 h-5" />;
@@ -80,8 +111,10 @@ const DetalhesChamadoAlternativo: React.FC<DetalhesChamadoProps> = ({ chamado })
             CHAMADO {chamado.id_importado || chamado.id}
           </h2>
 
-          <span className="bg-blue-100 text-blue-600 text-xs font-semibold px-4 py-2 rounded-full">
-            {chamado.status || "Sem status"}
+          <span
+            className={`${getStatusColorClass(chamado.status)} text-xs font-semibold px-4 py-2 rounded-full`}
+          >
+            {normalizeStatus(chamado.status) || "Sem status"}
           </span>
         </div>
 

@@ -14,7 +14,7 @@ const formatDate = (dateString: string | null | undefined) => {
 
   try {
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "Data inválida";
+    if (isNaN(date.getTime())) return "Data inválida!";
 
     return date.toLocaleDateString("pt-BR", {
       day: "2-digit",
@@ -29,7 +29,7 @@ const formatDate = (dateString: string | null | undefined) => {
 };
 
 const cleanMessage = (text: string) => {
-  if (!text) return "Nenhuma mensagem disponível";
+  if (!text) return "Nenhuma mensagem disponível.";
 
   try {
     return text
@@ -45,6 +45,37 @@ const cleanMessage = (text: string) => {
 
 const DetalhesChamadoJira: React.FC<DetalhesChamadoProps> = ({ chamado }) => {
   const router = useRouter();
+
+  const normalizeStatus = (status: string | undefined): string => {
+    if (!status) return "Sem status";
+
+    const normalized = status
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toUpperCase();
+
+    if (normalized === "CONCLUIDO") return "CONCLUÍDO";
+    if (normalized === "EM ABERTO") return "EM ABERTO";
+    return status.toUpperCase();
+  };
+
+  const getStatusColorClass = (status: string | undefined): string => {
+    const s = status
+      ?.normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toUpperCase()
+      .trim();
+
+    if (s === "EM ABERTO") {
+      return "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300";
+    }
+
+    if (s === "CONCLUIDO") {
+      return "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300";
+    }
+
+    return "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300";
+  };
 
   const periodoData = chamado.ultima_atualizacao
     ? `${formatDate(chamado.data_abertura)} - ${formatDate(chamado.ultima_atualizacao)}`
@@ -81,8 +112,10 @@ const DetalhesChamadoJira: React.FC<DetalhesChamadoProps> = ({ chamado }) => {
             CHAMADO {chamado.id_importado || chamado.id}
           </h2>
 
-          <span className="bg-blue-100 text-blue-600 text-xs font-semibold px-4 py-2 rounded-full">
-            {chamado.status || "Sem status"}
+          <span
+            className={`${getStatusColorClass(chamado.status)} text-xs font-semibold px-4 py-2 rounded-full`}
+          >
+            {normalizeStatus(chamado.status) || "Sem status"}
           </span>
         </div>
 

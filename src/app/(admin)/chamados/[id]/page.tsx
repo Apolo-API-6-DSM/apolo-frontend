@@ -24,11 +24,11 @@ const ChamadoPage = () => {
           console.log("Dados completos recebidos:", result.data);
           setChamado(result.data.chamado || result.data); // Ajuste para acessar a propriedade correta
         } else {
-          setError(result.error || "Erro desconhecido");
+          setError(result.error || "Erro desconhecido.");
         }
       } catch (err) {
         console.error("Erro ao carregar chamado:", err);
-        setError("Erro ao carregar os dados do chamado");
+        setError("Erro ao carregar os dados do chamado.");
       } finally {
         setIsLoading(false);
       }
@@ -37,14 +37,14 @@ const ChamadoPage = () => {
     if (id) {
       loadChamado();
     } else {
-      setError("ID do chamado não fornecido");
+      setError("ID do chamado não fornecido.");
       setIsLoading(false);
     }
   }, [id]);
 
   if (isLoading) return <div className="p-6">Carregando chamado...</div>;
   if (error) return <div className="p-6 text-red-500">{error}</div>;
-  if (!chamado) return <div className="p-6">Chamado não encontrado</div>;
+  if (!chamado) return <div className="p-6">Chamado não encontrado.</div>;
 
   console.log("Dados sendo passados para DetalhesChamado:", chamado);
   console.log(chamado.tipo_importacao)

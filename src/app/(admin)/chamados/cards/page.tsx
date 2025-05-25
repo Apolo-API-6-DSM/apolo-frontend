@@ -120,7 +120,7 @@ const ListaChamado = () => {
           const chamadoStatus = chamado?.status?.toLowerCase() || ''; // Adicionando verificação de undefined
           const statusMap: Record<string, string[]> = {
             'aberto': ['aberto', 'em andamento', 'em aberto'],
-            'concluido': ['concluido', 'concluído', 'concluída', 'resolvido', 'fechado'],
+            'concluído': ['concluído', 'concluída', 'resolvido', 'fechado'],
             'cancelado': ['cancelado']
           };
           return statusMap[normalizedStatus]?.includes(chamadoStatus) || chamadoStatus === normalizedStatus;

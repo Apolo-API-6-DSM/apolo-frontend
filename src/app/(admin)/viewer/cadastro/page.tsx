@@ -90,7 +90,7 @@ export default function CadastroUsuarioPage() {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {/* Nome Completo */}
             <div>
-              <Label>Nome Completo</Label>
+              <Label>Nome Completo:</Label>
               <Input
                 name="nome"
                 type="text"
@@ -177,7 +177,7 @@ export default function CadastroUsuarioPage() {
       <Modal isOpen={isOpen} onClose={closeModal} className="max-w-md">
         <div className="p-5 text-center">
           <h4 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white/90">
-            Senhas não coincidem
+            Senhas não coincidem!
           </h4>
           <p className="mb-6 text-gray-600 dark:text-gray-400">
             As senhas digitadas não são iguais. Por favor, verifique e tente novamente.
