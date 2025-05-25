@@ -50,12 +50,19 @@ const DetalhesChamadoAlternativo: React.FC<DetalhesChamadoProps> = ({ chamado })
   : formatDate(chamado.data_abertura);
 
   const getSentimentoEmoji = (sentimento?: string) => {
-    if (!sentimento || typeof sentimento !== 'string') return <FaSmile className="text-gray-500 dark:text-gray-400" />;
+    if (!sentimento || typeof sentimento !== 'string') {
+      return <FaSmile className="text-gray-500 dark:text-gray-400 w-5 h-5" />;
+    }
+
     const s = sentimento.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
-    if (["positivo", "positiva"].includes(s)) return '😊';
-    if (["neutro", "neutra"].includes(s)) return '😐';
-    if (["negativo", "negativa"].includes(s)) return '😞';
-    return <FaSmile className="text-gray-500 dark:text-gray-400" />;
+    let src = '';
+
+    if (["positivo", "positiva"].includes(s)) src = '/images/emotions/Happy.png';
+    else if (["neutro", "neutra"].includes(s)) src = '/images/emotions/Meh.png';
+    else if (["negativo", "negativa"].includes(s)) src = '/images/emotions/Sad.png';
+    else return <FaSmile className="text-gray-500 dark:text-gray-400 w-5 h-5" />;
+
+    return <img src={src} alt={sentimento} className="w-5 h-5" />;
   };
 
   return (
