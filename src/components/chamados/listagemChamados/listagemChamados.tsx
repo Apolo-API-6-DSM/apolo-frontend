@@ -41,12 +41,20 @@ const CardChamados: React.FC<CardChamadosProps> = ({ chamado }) => {
     ? `${formatarData(chamado.dataInicio)} - ${formatarData(chamado.dataFim)}`
     : formatarData(chamado.dataInicio);
 
-    const getSentimentoEmoji = (sentimento: string) => {
-      const lowerSentimento = sentimento.toLowerCase();
-      if (lowerSentimento === 'positiva') return '😊';
-      if (lowerSentimento === 'neutra') return '😐';
-      if (lowerSentimento === 'negativa') return '😞';
-      return <FaSmile className="text-gray-500 dark:text-gray-400" />; // Default
+    const getSentimentoEmoji = (sentimento?: string) => {
+      if (!sentimento || typeof sentimento !== 'string') {
+        return <FaSmile className="text-gray-500 dark:text-gray-400 w-5 h-5" />;
+      }
+
+      const s = sentimento.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+      let src = '';
+
+      if (["positivo", "positiva"].includes(s)) src = '/images/emotions/Happy.png';
+      else if (["neutro", "neutra"].includes(s)) src = '/images/emotions/Meh.png';
+      else if (["negativo", "negativa"].includes(s)) src = '/images/emotions/Sad.png';
+      else return <FaSmile className="text-gray-500 dark:text-gray-400 w-5 h-5" />;
+
+      return <img src={src} alt={sentimento} className="w-5 h-5" />;
     };
   
     const getStatusBgColor = (status: string) => {
