@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import CardChamados from "@/components/chamados/listagemChamados/listagemChamados";
-
 import { useSearchParams } from "next/navigation";
 import { buscaSemantica } from "@/services/service";
 
@@ -23,8 +22,10 @@ const tamanhoPagina = 10;
 
 const RelatorioChamados = () => {
   const searchParams = useSearchParams();
-  const query = searchParams.get("query");
-  const prompt = query || "chamados";
+  const queryParam = searchParams.get("query") || "chamados";
+
+  const [prompt, setPrompt] = useState(queryParam);
+  const [currentQuery, setCurrentQuery] = useState<string | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
   const [calls, setCalls] = useState<Chamado[]>([]);
@@ -35,23 +36,31 @@ const RelatorioChamados = () => {
 
   const totalPaginas = Math.ceil(totalChamados / tamanhoPagina);
 
+  // Detectar mudança na query
   useEffect(() => {
-    setPagina(1); // resetar página ao mudar o prompt
-    setToken(null); // limpar token para nova busca
-  }, [prompt]);
+    if (queryParam !== currentQuery) {
+      setCurrentQuery(queryParam);
+      setPrompt(queryParam);
+      setPagina(1);
+      setToken("");     // zera token
+      setCalls([]);     // limpa resultados anteriores
+    }
+  }, [queryParam]);
 
   useEffect(() => {
     fetchChamados();
-  }, [pagina, token, prompt]);
+  }, [pagina, prompt]);
 
   const fetchChamados = async () => {
     setIsLoading(true);
     try {
-      const result = await buscaSemantica(prompt, pagina, tamanhoPagina, token || "");
+      const storedToken = sessionStorage.getItem(`token:${prompt}`); // tenta usar token salvo
+      const result = await buscaSemantica(prompt, pagina, tamanhoPagina, storedToken || "");
       setCalls(result.resultados);
       setToken(result.token);
       setTotalChamados(result.total);
       setError(null);
+      sessionStorage.setItem(`token:${prompt}`, result.token);
       console.log("🔎 Resultado da busca:", result);
     } catch (err) {
       console.error("Erro ao buscar chamados:", err);
