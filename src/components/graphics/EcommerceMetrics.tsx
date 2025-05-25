@@ -3,6 +3,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { fetchTickets, formatStatus, Chamado } from '@/services/service';
+import ResponsaveisAtivosCard from "@/components/graphics/ResponsaveisAtivosChart";
+import TempoMedioFechamentoCard from "@/components/graphics/TempoMedioFechamentoChart";
+
 
 export function EcommerceMetrics() {
   const [isLoading, setIsLoading] = useState(true);
@@ -38,11 +41,12 @@ export function EcommerceMetrics() {
 
   // Resumo de estatísticas com tratamento de status
   const getStatsSummary = () => {
-    if (chamados.length === 0) return { total: 0, abertos: 0, fechados: 0, emProgresso: 0 }; 
+    if (chamados.length === 0) return { total: 0, abertos: 0, fechados: 0}; 
     
     const abertos = chamados.filter(c => 
       c.status?.toLowerCase() === 'aberto' || 
-      c.status?.toLowerCase() === 'novo'
+      c.status?.toLowerCase() === 'novo' ||
+      c.status?.toLowerCase() === 'em aberto'
     ).length;
     
     const fechados = chamados.filter(c => 
@@ -52,16 +56,10 @@ export function EcommerceMetrics() {
       c.status?.toLowerCase() === 'cancelado'
     ).length;
     
-    const emProgresso = chamados.filter(c => 
-      c.status?.toLowerCase() === 'em progresso' || 
-      c.status?.toLowerCase() === 'em andamento'
-    ).length;
-    
     return {
       total: chamados.length,
       abertos,
-      fechados,
-      emProgresso
+      fechados
     };
   };
 
@@ -95,23 +93,30 @@ export function EcommerceMetrics() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2" >
+    <div className="grid grid-cols-1 md:grid-cols-5 gap-3 text-center">
+      {/* Total de Chamados */}
+      <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2">
         <h3 className="text-sm dark:text-white font-medium text-gray-500">Total de Chamados</h3>
         <p className="text-3xl font-bold dark:text-white">{stats.total}</p>
       </div>
-      <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2" >
+  
+      {/* Chamados Abertos */}
+      <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2">
         <h3 className="text-sm dark:text-white font-medium text-gray-500">Chamados Abertos</h3>
         <p className="text-3xl font-bold text-yellow-500">{stats.abertos}</p>
       </div>
-      <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2" >
-        <h3 className="text-sm dark:text-white font-medium text-gray-500">Em Progresso</h3>
-        <p className="text-3xl font-bold text-blue-500">{stats.emProgresso}</p>
-      </div>
-      <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2" >
-        <h3 className="text-sm dark:text-white font-medium text-gray-500">Chamados Fechados</h3>
+  
+      {/* Chamados Encerrados */}
+      <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2">
+        <h3 className="text-sm dark:text-white font-medium text-gray-500">Chamados Encerrados</h3>
         <p className="text-3xl font-bold text-green-500">{stats.fechados}</p>
       </div>
-    </div>
+  
+      {/* Tempo Médio de Fechamento */}
+      <TempoMedioFechamentoCard />
+  
+      {/* Responsáveis Ativos */}
+      <ResponsaveisAtivosCard />
+    </div>  
   );
 }

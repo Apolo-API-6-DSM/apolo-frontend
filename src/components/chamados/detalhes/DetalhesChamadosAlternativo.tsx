@@ -49,6 +49,15 @@ const DetalhesChamadoAlternativo: React.FC<DetalhesChamadoProps> = ({ chamado })
   ? `${formatDate(chamado.data_abertura)} - ${formatDate(chamado.ultima_atualizacao)}`
   : formatDate(chamado.data_abertura);
 
+  const getSentimentoEmoji = (sentimento?: string) => {
+    if (!sentimento || typeof sentimento !== 'string') return <FaSmile className="text-gray-500 dark:text-gray-400" />;
+    const s = sentimento.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+    if (["positivo", "positiva"].includes(s)) return '😊';
+    if (["neutro", "neutra"].includes(s)) return '😐';
+    if (["negativo", "negativa"].includes(s)) return '😞';
+    return <FaSmile className="text-gray-500 dark:text-gray-400" />;
+  };
+
   return (
     <div className="space-y-6">
       <button 
@@ -71,7 +80,7 @@ const DetalhesChamadoAlternativo: React.FC<DetalhesChamadoProps> = ({ chamado })
 
         <div className="flex flex-wrap dark:text-white gap-6 mb-6">
           <div className="flex items-center gap-2">
-            <FaSmile className="text-green-500" />
+            {getSentimentoEmoji(chamado.sentimento_cliente)}
             <span>{chamado.sentimento_cliente || "Não informado"}</span>
           </div>
 

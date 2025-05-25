@@ -118,9 +118,9 @@ const ListaChamado = () => {
 
           // Mapeamento de status equivalentes
           const statusMap: Record<string, string[]> = {
-            'aberto': ['aberto', 'em andamento'],
-            'pendente': ['pendente', 'aguardando pelo suporte', 'itens pendentes'],
-            'concluido': ['concluido', 'concluído', 'concluída', 'resolvido', 'fechado']
+            'aberto': ['aberto', 'em andamento', 'em aberto'],
+            'concluido': ['concluido', 'concluído', 'concluída', 'resolvido', 'fechado'],
+            'cancelado': ['cancelado']
           };
 
           // Verifica se o status do chamado corresponde ao filtro
@@ -203,7 +203,7 @@ const ListaChamado = () => {
           <div className="mb-4 p-3 bg-blue-50 text-blue-800 rounded-lg dark:bg-blue-900/20 dark:text-blue-200">
             Exibindo chamados do arquivo ID: {nomeArquivoId}
             <button 
-              onClick={() => window.location.href = '/chamados'}
+              onClick={() => window.location.href = '/chamados/listagem'}
               className="ml-2 text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-100"
             >
               (Ver todos os chamados)
@@ -213,12 +213,12 @@ const ListaChamado = () => {
 
         {/* Restante do JSX permanece igual */}
         <div className="flex space-x-4 mb-6">
-        <Link
+        {/* <Link
             href={`/chamados/${nomeArquivoId ? `?nomeArquivoId=${nomeArquivoId}` : ''}`}
             className={`px-4 py-2 rounded-lg ${pathname === '/chamados' ? 'bg-[#00163B] text-white' : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600'}`}
           >
             <ListBulletIcon className="h-5 w-5" aria-label="Visualização em lista" />
-          </Link>
+          </Link> */}
         <Link
           href={`/chamados/listagem${nomeArquivoId ? `?nomeArquivoId=${nomeArquivoId}` : ''}`}
           className={`px-4 py-2 rounded-lg ${pathname === '/chamados/listagem' ? 'bg-[#00163B] text-white' : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600'}`}
@@ -257,6 +257,7 @@ const ListaChamado = () => {
               initialFilters={filterValues} 
               setFilters={setFilterValues}
               hasNomeArquivoId={!!nomeArquivoId} // Passa true se estiver filtrado por arquivo
+              onClose={closeFilterModal}
             />
             <div className="flex items-center justify-end w-full gap-3 mt-8">
               <Button size="sm" variant="outline" onClick={closeFilterModal}>

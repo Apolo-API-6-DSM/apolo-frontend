@@ -2,6 +2,9 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
+import MonthlySalesChartHome from "@/components/graphics/MonthlySalesChartHome";
+import { PizzaTipoChamadoChartHome } from "@/components/graphics/PizzaTipoChamadoChartHome";
+import DemographicCardHome from "@/components/graphics/DemographicCardHome";
 
 // Tipagem dos dados para os gráficos
 type ChartDataItem = { name: string; value: number };
@@ -46,17 +49,21 @@ export default function DashboardCharts() {
     <section className="space-y-6">
       {/* Gráfico de Barras */}
       <ChartCard title="Chamados por Dia">
-        <BarChartOne data={barData} />
+        <MonthlySalesChartHome />
       </ChartCard>
 
       {/* Gráficos de Pizza */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <ChartCard title="Sentimentos">
-          <PieChartOne data={pieDataOne} />
+          <div className="h-[250px]"> {/* Diminuí a altura */}
+            <DemographicCardHome />
+          </div>
         </ChartCard>
 
         <ChartCard title="Status dos Chamados">
-          <PieChartTwo data={pieDataTwo} />
+          <div className="h-[250px]"> {/* Diminuí a altura */}
+            <PizzaTipoChamadoChartHome />
+          </div>
         </ChartCard>
       </div>
     </section>

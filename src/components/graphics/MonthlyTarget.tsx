@@ -9,7 +9,18 @@ export default function MonthlyTarget() {
   const [statusData, setStatusData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+  // Cores padronizadas para status
+  const colorMap: Record<string, string> = {
+    Concluido: '#2196F3',
+    Concluído: '#2196F3',
+    Aberto: '#FF9800',
+    Pendente: '#9C27B0',
+    Outros: '#9C27B0',
+    Positivo: '#4CAF50',
+    Neutro: '#FFEB3B',
+    Negativo: '#F44336',
+  };
+  const defaultColors = ['#2196F3', '#FF9800', '#9C27B0'];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -77,13 +88,13 @@ export default function MonthlyTarget() {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2" >
-      <h3 className="text-lg font-medium mb-4 dark:text-white">Chamados por Status</h3>
-      <div className="h-96">
+      <h3 className="text-lg font-medium mb-4 dark:text-white text-center">Chamados por Status</h3>
+      <div className="h-[500px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={statusData}
             layout="vertical"
-            margin={{ top: 5, right: 30, left: 70, bottom: 5 }}
+            margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis type="number" />
@@ -91,9 +102,13 @@ export default function MonthlyTarget() {
             <Tooltip />
             <Legend />
             <Bar dataKey="value" name="Quantidade" fill="#3182ce">
-              {statusData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
+              {statusData.map((entry, index) => {
+                let cor = colorMap[entry.name];
+                if (!cor && entry.name.toLowerCase().includes('conclu')) cor = '#2196F3';
+                if (!cor && entry.name.toLowerCase().includes('abert')) cor = '#FF9800';
+                if (!cor) cor = defaultColors[index % defaultColors.length];
+                return <Cell key={`cell-${index}`} fill={cor} />;
+              })}
             </Bar>
           </BarChart>
         </ResponsiveContainer>

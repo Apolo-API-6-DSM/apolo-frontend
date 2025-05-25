@@ -9,7 +9,12 @@ export default function DemographicCard() {
   const [sentimentoData, setSentimentoData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+  const colorMap: Record<string, string> = {
+    Positivo: '#4CAF50',
+    Neutro: '#FFEB3B',
+    Negativo: '#F44336',
+  };
+  const colors = ['#2196F3', '#FF9800', '#9C27B0'];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,8 +52,6 @@ export default function DemographicCard() {
     data.forEach(chamado => {
       if (chamado.sentimento_cliente) {
         sentimentoCount[chamado.sentimento_cliente] = (sentimentoCount[chamado.sentimento_cliente] || 0) + 1;
-      } else {
-        sentimentoCount['Não informado'] = (sentimentoCount['Não informado'] || 0) + 1;
       }
     });
     
@@ -56,7 +59,12 @@ export default function DemographicCard() {
       name: sentimento,
       value: sentimentoCount[sentimento]
     }));
-    setSentimentoData(sentimentoDataArray);
+
+    const filteredData = sentimentoDataArray.filter(item => 
+      !["Não informado", "N/A", ""].includes(item.name)
+    );
+
+    setSentimentoData(filteredData);
   };
 
   if (isLoading) {
@@ -81,7 +89,7 @@ export default function DemographicCard() {
 
   return (
     <div className="bg-white dark:bg-gray-800 h-full p-4 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2" >
-      <h3 className="text-lg dark:text-white font-medium mb-4">Distribuição por Sentimento</h3>
+      <h3 className="text-lg dark:text-white font-medium mb-4 text-center">Distribuição por Sentimento</h3>
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -95,9 +103,10 @@ export default function DemographicCard() {
               fill="#8884d8"
               dataKey="value"
             >
-              {sentimentoData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
+              {sentimentoData.map((entry, index) => {
+                let color = colorMap[entry.name] || colors[index % colors.length];
+                return <Cell key={`cell-${index}`} fill={color} />;
+              })}
             </Pie>
             <Tooltip />
             <Legend />
