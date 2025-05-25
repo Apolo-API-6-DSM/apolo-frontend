@@ -70,17 +70,24 @@ const CardSimples: React.FC<CardSimplesProps> = ({ chamado }) => {
   const getSentimentoEmoji = (sentimento: string | undefined) => {
     if (!sentimento) return null;
     const lowerSentimento = sentimento.toLowerCase();
-    if (lowerSentimento === 'positiva') return '😊';
-    if (lowerSentimento === 'neutra') return '😐';
-    if (lowerSentimento === 'negativa') return '😞';
+    if (lowerSentimento === 'positiva') return '/images/emotions/Happy.png';
+    if (lowerSentimento === 'neutra') return '/images/emotions/Meh.png';
+    if (lowerSentimento === 'negativa') return '/images/emotions/Sad.png';
     return null;
   };
 
   return (
     <div className="rounded-md hover:shadow-lg cursor-pointer border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.05]" onClick={handleVerMais}>
       <div className="flex items-center justify-between mb-2">
-        <h5 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-          CHAMADO {chamado.id} {getSentimentoEmoji(chamado.sentimento)}
+        <h5 className="text-lg font-semibold text-gray-800 dark:text-white/90 flex items-center space-x-2">
+          <span>CHAMADO {chamado.id}</span>
+          {getSentimentoEmoji(chamado.sentimento) && (
+            <img
+              src={getSentimentoEmoji(chamado.sentimento)!}
+              alt={chamado.sentimento}
+              className="w-6 h-6"
+            />
+          )}
         </h5>
         {chamado.status && (
           <span
