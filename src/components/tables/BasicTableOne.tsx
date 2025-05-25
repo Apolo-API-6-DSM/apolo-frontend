@@ -43,6 +43,21 @@ export default function BasicTableOne() {
     carregarArquivos();
   }, []);
 
+  const normalizeStatus = (status: string | undefined): string => {
+    if (!status) return "DESCONHECIDO";
+    
+    const s = status
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // remove acentos
+      .toUpperCase();
+
+    if (s === "CONCLUIDO") return "CONCLUÍDO";
+    if (s === "PROCESSANDO") return "PROCESSANDO";
+    if (s === "ERRO" || s === "FALHA") return "ERRO";
+    
+    return status;
+  };
+
   const handleVerChamados = (nomeArquivoId: number | undefined) => {
     if (!nomeArquivoId) {
       console.error('ID do arquivo não está disponível');
@@ -122,14 +137,14 @@ export default function BasicTableOne() {
                   <Badge
                     size="sm"
                     color={
-                      arquivo["Status"] === "CONCLUIDO"
+                      normalizeStatus(arquivo["Status"]) === "CONCLUÍDO"
                         ? "success"
-                        : arquivo["Status"] === "PROCESSANDO"
-                        ? "default"
+                        : normalizeStatus(arquivo["Status"]) === "PROCESSANDO"
+                        ? "warning" // ou "info" ou "primary" dependendo do seu design
                         : "error"
                     }
                   >
-                    {arquivo["Status"]}
+                    {normalizeStatus(arquivo["Status"])}
                   </Badge>
                 </TableCell>
                 <TableCell className="px-5 py-4 sm:px-6 text-start text-theme-sm dark:text-gray-400">

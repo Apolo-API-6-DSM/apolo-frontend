@@ -46,7 +46,7 @@ const CardHome: React.FC<CardHomeProps> = ({ chamado }) => {
 
   const getStatusBgColor = (status: string | undefined) => {
     const lowerStatus = status ? status.toLowerCase() : '';
-    if (lowerStatus === 'aberto' || lowerStatus === 'em andamento') return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300';
+    if (lowerStatus === 'em aberto' || lowerStatus === 'em andamento') return "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300";
     if (lowerStatus === 'pendente' || lowerStatus === 'aguardando pelo suporte' || lowerStatus === 'itens pendentes') return 'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300';
     if (lowerStatus === 'concluido' || lowerStatus === 'concluído' || lowerStatus === 'concluída' || lowerStatus === 'resolvido' || lowerStatus === 'fechado') return 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300';
     return 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300';
