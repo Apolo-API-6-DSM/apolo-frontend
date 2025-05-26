@@ -3,6 +3,37 @@ import axios from 'axios';
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003',
 });
+const apiBusca = axios.create({
+  baseURL: "http://localhost:8081"
+})
+
+export const buscaSemantica = async (
+  prompt: string,
+  page: number,
+  limit: number,
+  token?: string
+) => {
+  try {
+    const response = await apiBusca.post('/busca-semantica', 
+      {
+        prompt,
+        token
+      },
+      {
+        params: {
+          page,
+          limit
+        }
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    // Aqui você pode tratar o erro como preferir
+    console.error('Erro na busca semântica:', error);
+    throw error;
+  }
+}
 
 export const importJiraCSV = async (
   file: File, 

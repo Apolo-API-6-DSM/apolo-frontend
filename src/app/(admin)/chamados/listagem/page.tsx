@@ -4,11 +4,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import CardChamados from '@/components/chamados/listagemChamados/listagemChamados';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import Filtros from '@/components/chamados/filtragem/Filtragem'; // Importe o componente Filtros
-import { useModal } from '@/hooks/useModal'; // Importe o hook useModal
-import { Modal } from '@/components/ui/modal'; // Importe o componente Modal
-import Button from '@/components/ui/button/Button'; // Importe o componente Button (se estiver usando)
-import { ListBulletIcon, Squares2X2Icon } from '@heroicons/react/24/outline'; // Para ícones de contorno
+import Filtros from '@/components/chamados/filtragem/Filtragem';
+import { useModal } from '@/hooks/useModal';
+import { Modal } from '@/components/ui/modal';
+import Button from '@/components/ui/button/Button';
+import { ListBulletIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
 import { fetchTicketByNomeArquivoId, fetchTickets } from '@/services/service';
 
 interface Chamado {
@@ -39,7 +39,7 @@ const ListaChamado = () => {
   const searchParams = useSearchParams();
   const nomeArquivoId = searchParams.get('nomeArquivoId');
   
-  const [filterValues, setFilterValues] = useState<FilterState>({ // Estado dentro do componente
+  const [filterValues, setFilterValues] = useState<FilterState>({
     status: '',
     dataInicio: '',
     dataFim: '',
@@ -119,7 +119,7 @@ const ListaChamado = () => {
           // Mapeamento de status equivalentes
           const statusMap: Record<string, string[]> = {
             'aberto': ['aberto', 'em andamento', 'em aberto'],
-            'concluido': ['concluido', 'concluído', 'concluída', 'resolvido', 'fechado'],
+            'concluído': ['concluído', 'concluída', 'resolvido', 'fechado'],
             'cancelado': ['cancelado']
           };
 

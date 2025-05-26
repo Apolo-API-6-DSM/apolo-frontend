@@ -3,6 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { FaSmile, FaCommentDots, FaClock, FaUser } from "react-icons/fa";
+import { useAuth } from "@/hooks/useAuth";
 
 interface DetalhesChamadoProps {
   chamado: any;
@@ -42,12 +43,93 @@ const cleanMessage = (text: string) => {
   }
 };
 
+const getUserRole = (): string | null => {
+  if (typeof window === "undefined") return null;
+  
+  const token = localStorage.getItem("access_token");
+  if (!token) return null;
+  
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.papel || null;
+  } catch {
+    return null;
+  }
+};
+
 const DetalhesChamadoAlternativo: React.FC<DetalhesChamadoProps> = ({ chamado }) => {
   const router = useRouter();
+  useAuth(); // Usa o hook de autenticação
+  
+  const userRole = getUserRole();
+  const isAdmin = userRole === 'admin';
 
   const periodoData = chamado.ultima_atualizacao
-  ? `${formatDate(chamado.data_abertura)} - ${formatDate(chamado.ultima_atualizacao)}`
-  : formatDate(chamado.data_abertura);
+    ? `${formatDate(chamado.data_abertura)} - ${formatDate(chamado.ultima_atualizacao)}`
+    : formatDate(chamado.data_abertura);
+
+  const normalizeStatus = (status: string | undefined): string => {
+    if (!status) return "Sem status";
+
+    const normalized = status
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toUpperCase();
+
+    if (normalized === "CONCLUIDO") return "Concluído";
+    if (normalized === "EM ABERTO") return "Em aberto";
+    return status;
+  };
+
+  const getTipoImportacaoColorClass = (tipo: string | undefined): string => {
+    if (!tipo) return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
+    
+    const normalizedTipo = tipo.toLowerCase().trim();
+    
+    if (normalizedTipo === "jira") {
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+    }
+    
+    if (normalizedTipo === "alternativo") {
+      return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
+    }
+    
+    return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
+  };
+
+  const getStatusColorClass = (status: string | undefined): string => {
+    const s = status
+      ?.normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toUpperCase()
+      .trim();
+
+    if (s === "EM ABERTO") {
+      return "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300";
+    }
+
+    if (s === "CONCLUIDO") {
+      return "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300";
+    }
+
+    return "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300";
+  };
+
+  const getSentimentoEmoji = (sentimento?: string) => {
+    if (!sentimento || typeof sentimento !== 'string') {
+      return <FaSmile className="text-gray-500 dark:text-gray-400 w-5 h-5" />;
+    }
+
+    const s = sentimento.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+    let src = '';
+
+    if (["positivo", "positiva"].includes(s)) src = '/images/emotions/Happy.png';
+    else if (["neutro", "neutra"].includes(s)) src = '/images/emotions/Meh.png';
+    else if (["negativo", "negativa"].includes(s)) src = '/images/emotions/Sad.png';
+    else return <FaSmile className="text-gray-500 dark:text-gray-400 w-5 h-5" />;
+
+    return <img src={src} alt={sentimento} className="w-5 h-5" />;
+  };
 
   return (
     <div className="space-y-6">
@@ -64,14 +146,16 @@ const DetalhesChamadoAlternativo: React.FC<DetalhesChamadoProps> = ({ chamado })
             CHAMADO {chamado.id_importado || chamado.id}
           </h2>
 
-          <span className="bg-blue-100 text-blue-600 text-xs font-semibold px-4 py-2 rounded-full">
-            {chamado.status || "Sem status"}
+          <span
+            className={`${getStatusColorClass(chamado.status)} text-xs font-semibold px-4 py-2 rounded-full`}
+          >
+            {normalizeStatus(chamado.status) || "Sem status"}
           </span>
         </div>
 
         <div className="flex flex-wrap dark:text-white gap-6 mb-6">
           <div className="flex items-center gap-2">
-            <FaSmile className="text-green-500" />
+            {getSentimentoEmoji(chamado.sentimento_cliente)}
             <span>{chamado.sentimento_cliente || "Não informado"}</span>
           </div>
 
@@ -91,7 +175,7 @@ const DetalhesChamadoAlternativo: React.FC<DetalhesChamadoProps> = ({ chamado })
           </div>
         </div>
 
-        <span className="block w-full bg-cover dark:text-white text-right text-base">
+        <span className={`block w-full py-2 px-3 rounded-lg text-center text-base font-medium ${getTipoImportacaoColorClass(chamado.tipo_importacao)}`}>
           {chamado.tipo_importacao || "Não atribuído"}
         </span>
 
@@ -110,17 +194,32 @@ const DetalhesChamadoAlternativo: React.FC<DetalhesChamadoProps> = ({ chamado })
         </div>
       </div>
 
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
-        <h4 className="mb-4 text-md font-medium text-gray-800 dark:text-white/90">Descrição</h4>
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
-          <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">{cleanMessage(chamado.descricao)}</pre>
+       {isAdmin ? (
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
+          <h4 className="mb-4 text-md font-medium text-gray-800 dark:text-white/90">Descrição (Original - Admin)</h4>
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+            <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
+              {cleanMessage(chamado.descricao_original)}
+            </pre>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
+          <h4 className="mb-4 text-md font-medium text-gray-800 dark:text-white/90">Descrição (Processada - Viewer)</h4>
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+            <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
+              {cleanMessage(chamado.descricao_processada)}
+            </pre>
+          </div>
+        </div>
+      )}
 
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
         <h4 className="mb-4 text-md font-medium text-gray-800 dark:text-white/90">Solução</h4>
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
-          <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">{cleanMessage(chamado.solucao)}</pre>
+          <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
+            {cleanMessage(chamado.solucao)}
+          </pre>
         </div>
       </div>
     </div>

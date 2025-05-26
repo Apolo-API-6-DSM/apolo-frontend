@@ -81,9 +81,9 @@ const Filtros = ({ onFilter, initialFilters, setFilters, hasNomeArquivoId, onClo
             value={filters.status}
           >
             <option value="">Todos os status</option>
-            <option value="aberto">Aberto</option>
-            <option value="concluido">Concluído</option>
-            <option value="cancelado">Cancelado</option>
+            <option value="Em aberto">Aberto</option>
+            <option value="Concluído">Concluído</option>
+            <option value="Cancelado">Cancelado</option>
           </select>
         </div>
 

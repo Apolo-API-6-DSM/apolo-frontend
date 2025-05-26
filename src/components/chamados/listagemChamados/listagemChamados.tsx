@@ -41,19 +41,40 @@ const CardChamados: React.FC<CardChamadosProps> = ({ chamado }) => {
     ? `${formatarData(chamado.dataInicio)} - ${formatarData(chamado.dataFim)}`
     : formatarData(chamado.dataInicio);
 
-    const getSentimentoEmoji = (sentimento: string) => {
-      const lowerSentimento = sentimento.toLowerCase();
-      if (lowerSentimento === 'positiva') return '😊';
-      if (lowerSentimento === 'neutra') return '😐';
-      if (lowerSentimento === 'negativa') return '😞';
-      return <FaSmile className="text-gray-500 dark:text-gray-400" />; // Default
+    const getSentimentoEmoji = (sentimento?: string) => {
+      if (!sentimento || typeof sentimento !== 'string') {
+        return <FaSmile className="text-gray-500 dark:text-gray-400 w-5 h-5" />;
+      }
+
+      const s = sentimento.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+      let src = '';
+
+      if (["positivo", "positiva"].includes(s)) src = '/images/emotions/Happy.png';
+      else if (["neutro", "neutra"].includes(s)) src = '/images/emotions/Meh.png';
+      else if (["negativo", "negativa"].includes(s)) src = '/images/emotions/Sad.png';
+      else return <FaSmile className="text-gray-500 dark:text-gray-400 w-5 h-5" />;
+
+      return <img src={src} alt={sentimento} className="w-5 h-5" />;
+    };
+    
+    const formatarSentimento = (sentimento?: string) => {
+      if (!sentimento) return '';
+      
+      const s = sentimento.toLowerCase();
+      
+      if (s === 'positiva') return 'Positivo';
+      if (s === 'negativa') return 'Negativo';
+      if (s === 'neutra') return 'Neutro';
+      
+      // Caso já esteja no formato desejado ou seja outro valor
+      return sentimento.charAt(0).toUpperCase() + sentimento.slice(1).toLowerCase();
     };
   
     const getStatusBgColor = (status: string) => {
       const lowerStatus = status.toLowerCase();
-      if (lowerStatus === 'aberto' || lowerStatus === 'em andamento') return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300';
+      if (lowerStatus === 'aberto' || lowerStatus === 'em andamento' || lowerStatus === "em aberto") return "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300";
       if (lowerStatus === 'pendente' || lowerStatus === 'aguardando pelo suporte' || lowerStatus === 'itens pendentes') return 'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300';
-      if (lowerStatus === 'concluido' || lowerStatus === 'concluído' || lowerStatus === 'concluída' || lowerStatus === 'resolvido' || lowerStatus === 'fechado') return 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300';
+      if (lowerStatus === 'concluído' || lowerStatus === 'concluída' || lowerStatus === 'resolvido' || lowerStatus === 'fechado') return 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300';
       return 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300'; // Default
     };
   
@@ -72,12 +93,12 @@ const CardChamados: React.FC<CardChamadosProps> = ({ chamado }) => {
   
             <div className="flex items-center gap-1">
               {getSentimentoEmoji(chamado.sentimento)}
-              <span className="text-gray-700 dark:text-gray-300">{chamado.sentimento}</span>
+              <span className="text-gray-700 dark:text-gray-300">{formatarSentimento(chamado.sentimento)}</span>
             </div>
   
             <div className="flex items-center gap-1">
               <FaCommentDots className={getIconColor()} />
-              <span className="text-gray-700 dark:text-gray-300">{chamado.tipo}</span>
+                <span className="text-black-700 dark:text-gray-300 font-bold">{chamado.tipo}</span>
             </div>
   
             <div className="flex items-center gap-1">

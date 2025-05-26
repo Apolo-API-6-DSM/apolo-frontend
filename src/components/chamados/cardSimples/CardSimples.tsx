@@ -18,8 +18,40 @@ interface CardSimplesProps {
 }
 
 
+
 const CardSimples: React.FC<CardSimplesProps> = ({ chamado }) => {
   const router = useRouter();
+
+  const normalizeStatus = (status: string | undefined): string => {
+    if (!status) return "Sem status";
+
+    const normalized = status
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toUpperCase();
+
+    if (normalized === "CONCLUIDO") return "Concluído";
+    if (normalized === "EM ABERTO") return "Em aberto";
+    return status;
+  };
+
+  const getStatusColorClass = (status: string | undefined): string => {
+    const s = status
+      ?.normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toUpperCase()
+      .trim();
+
+    if (s === "EM ABERTO") {
+      return "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300";
+    }
+
+    if (s === "CONCLUIDO") {
+      return "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300";
+    }
+
+    return "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300";
+  };
   
   const handleVerMais = () => {
     router.push(`/chamados/${chamado.id}`);
@@ -38,21 +70,30 @@ const CardSimples: React.FC<CardSimplesProps> = ({ chamado }) => {
   const getSentimentoEmoji = (sentimento: string | undefined) => {
     if (!sentimento) return null;
     const lowerSentimento = sentimento.toLowerCase();
-    if (lowerSentimento === 'positiva') return '😊';
-    if (lowerSentimento === 'neutra') return '😐';
-    if (lowerSentimento === 'negativa') return '😞';
+    if (lowerSentimento === 'positiva') return '/images/emotions/Happy.png';
+    if (lowerSentimento === 'neutra') return '/images/emotions/Meh.png';
+    if (lowerSentimento === 'negativa') return '/images/emotions/Sad.png';
     return null;
   };
 
   return (
     <div className="rounded-md hover:shadow-lg cursor-pointer border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.05]" onClick={handleVerMais}>
       <div className="flex items-center justify-between mb-2">
-        <h5 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-          CHAMADO {chamado.id} {getSentimentoEmoji(chamado.sentimento)}
+        <h5 className="text-lg font-semibold text-gray-800 dark:text-white/90 flex items-center space-x-2">
+          <span>CHAMADO {chamado.id}</span>
+          {getSentimentoEmoji(chamado.sentimento) && (
+            <img
+              src={getSentimentoEmoji(chamado.sentimento)!}
+              alt={chamado.sentimento}
+              className="w-6 h-6"
+            />
+          )}
         </h5>
         {chamado.status && (
-          <span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-600 dark:bg-blue-900 dark:text-blue-300">
-            {chamado.status.toUpperCase()}
+          <span
+            className={`${getStatusColorClass(chamado.status)} text-xs font-semibold px-4 py-2 rounded-full`}
+          >
+            {normalizeStatus(chamado.status) || "Sem status"}
           </span>
         )}
       </div>

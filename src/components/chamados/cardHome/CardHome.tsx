@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { FaSmile, FaCommentDots, FaClock, FaUser } from "react-icons/fa";
+import { FaSmile, FaClock } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 
 interface CardHomeProps {
@@ -27,7 +27,12 @@ const CardHome: React.FC<CardHomeProps> = ({ chamado }) => {
     try {
       const data = new Date(dataString);
       if (isNaN(data.getTime())) return '';
-      return `${data.getDate().toString().padStart(2, '0')}/${(data.getMonth() + 1).toString().padStart(2, '0')} - ${data.getHours().toString().padStart(2, '0')}:${data.getMinutes().toString().padStart(2, '0')}`;
+      return `${data.getDate().toString().padStart(2, '0')}/${(data.getMonth() + 1)
+        .toString()
+        .padStart(2, '0')} - ${data.getHours().toString().padStart(2, '0')}:${data
+        .getMinutes()
+        .toString()
+        .padStart(2, '0')}`;
     } catch (e) {
       return '';
     }
@@ -35,20 +40,33 @@ const CardHome: React.FC<CardHomeProps> = ({ chamado }) => {
 
   const getSentimentoEmoji = (sentimento: string | undefined) => {
     if (!sentimento) {
-      return <FaSmile className="text-gray-500 dark:text-gray-400" />;
+      return <FaSmile className="text-gray-500 dark:text-gray-400 w-5 h-5" />;
     }
+
     const lowerSentimento = sentimento.toLowerCase();
-    if (lowerSentimento === 'positiva') return '😊';
-    if (lowerSentimento === 'neutra') return '😐';
-    if (lowerSentimento === 'negativa') return '😞';
-    return <FaSmile className="text-gray-500 dark:text-gray-400" />;
+    let src = '';
+
+    if (lowerSentimento === 'positiva') src = '/images/emotions/Happy.png';
+    else if (lowerSentimento === 'neutra') src = '/images/emotions/Meh.png';
+    else if (lowerSentimento === 'negativa') src = '/images/emotions/Sad.png';
+    else return <FaSmile className="text-gray-500 dark:text-gray-400 w-5 h-5" />;
+
+    return (
+      <img
+        src={src}
+        alt={sentimento}
+        className="w-5 h-5"
+      />
+    );
   };
 
   const getStatusBgColor = (status: string | undefined) => {
     const lowerStatus = status ? status.toLowerCase() : '';
-    if (lowerStatus === 'aberto' || lowerStatus === 'em andamento') return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300';
+
+    if (lowerStatus === 'em aberto' || lowerStatus === 'em andamento') return "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300";
     if (lowerStatus === 'pendente' || lowerStatus === 'aguardando pelo suporte' || lowerStatus === 'itens pendentes') return 'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300';
     if (lowerStatus === 'concluido' || lowerStatus === 'concluído' || lowerStatus === 'concluída' || lowerStatus === 'resolvido' || lowerStatus === 'fechado') return 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300';
+
     return 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300';
   };
 
@@ -64,28 +82,41 @@ const CardHome: React.FC<CardHomeProps> = ({ chamado }) => {
       onClick={handleCardClick}
     >
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-gray-800 dark:text-gray-100">Chamado: {chamado.id_importado}</h3>
+        <div className="flex items-center space-x-2">
+          <h3 className="font-semibold text-gray-800 dark:text-gray-100">
+            Chamado: {chamado.id_importado}
+          </h3>
+          {getSentimentoEmoji(chamado.sentimento_cliente)}
+        </div>
         {chamado.status && (
-          <span className={`${getStatusBgColor(chamado.status)} text-xs font-semibold px-2 py-1 rounded-full`}>
+          <span
+            className={`${getStatusBgColor(
+              chamado.status
+            )} text-xs font-semibold px-2 py-1 rounded-full`}
+          >
             {chamado.status}
           </span>
         )}
       </div>
-      <h4 className="font-bold text-md text-gray-900 dark:text-gray-100 break-words">Título: {chamado.titulo}</h4>
-      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-        {getSentimentoEmoji(chamado.sentimento_cliente)}
+      <h4 className="font-bold text-md text-gray-900 dark:text-gray-100 break-words">
+        Título: {chamado.titulo}
+      </h4>
+      <div className="flex items-center gap-2 text-sm text-black-600 dark:text-gray-300">
         {chamado.tipo_importacao && (
-          <>
-            <span>{chamado.tipo_importacao}</span>
-          </>
+          <span className="font-bold">{chamado.tipo_importacao}</span>
         )}
 
         {chamado.data_abertura && <FaClock className={getIconColor()} />}
-        <span>{chamado.data_abertura ? formatarDataSimples(chamado.data_abertura) : ''}</span>
+        <span>
+          {chamado.data_abertura
+            ? formatarDataSimples(chamado.data_abertura)
+            : ''}
+        </span>
         {chamado.responsavel && (
-          <>
-            <span>Responsável: <br></br>{chamado.responsavel}</span>
-          </>
+          <span>
+            Responsável: <br />
+            {chamado.responsavel}
+          </span>
         )}
       </div>
     </div>

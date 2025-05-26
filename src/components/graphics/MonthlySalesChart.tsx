@@ -4,9 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { fetchTickets, Chamado } from '@/services/service';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, parseISO, startOfDay, endOfDay, startOfWeek, endOfWeek, 
-  startOfMonth, endOfMonth, startOfYear, endOfYear, addDays, addMonths, 
-  eachDayOfInterval, eachWeekOfInterval, eachMonthOfInterval, isSameMonth } from 'date-fns';
+  startOfMonth, endOfMonth, startOfYear, endOfYear, addMonths,
+  eachDayOfInterval, eachMonthOfInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useDashboardDate } from "@/components/graphics/DashboardDateContext";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -21,6 +22,16 @@ export default function MonthlySalesChart() {
   const [dataSelecionada, setDataSelecionada] = useState<Date>(new Date());
   const [dataInicio, setDataInicio] = useState<Date>(new Date());
   const [dataFim, setDataFim] = useState<Date>(new Date());
+  const { selectedRange } = useDashboardDate();
+
+  // Sincroniza com o filtro global
+  useEffect(() => {
+    if (selectedRange.start) {
+      setDataSelecionada(selectedRange.start);
+      setDataInicio(selectedRange.start);
+      setDataFim(selectedRange.end ?? selectedRange.start);
+    }
+  }, [selectedRange]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,6 +62,15 @@ export default function MonthlySalesChart() {
   }, [allChamados, periodo, dataSelecionada]);
 
   const atualizarIntervaloDatas = () => {
+    // Se houver intervalo global, usa ele
+    if (selectedRange.start && selectedRange.end) {
+      setDataInicio(selectedRange.start);
+      setDataFim(selectedRange.end);
+      processTrafficData();
+      return;
+    }
+
+    // Caso contrário, usa o período selecionado
     switch(periodo) {
       case 'dia':
         setDataInicio(startOfDay(dataSelecionada));
@@ -78,7 +98,6 @@ export default function MonthlySalesChart() {
 
   const handlePeriodoChange = (novoPeriodo: Periodo) => {
     setPeriodo(novoPeriodo);
-    // Mantém a data selecionada, apenas atualiza o intervalo
     atualizarIntervaloDatas();
   };
 
@@ -92,58 +111,67 @@ export default function MonthlySalesChart() {
 
     let dataFormatada: any[] = [];
 
-    if (periodo === 'dia') {
+    if (periodo === 'dia' || (selectedRange.start && selectedRange.end && selectedRange.start.getTime() === selectedRange.end.getTime())) {
       // Agrupa por hora do dia
-      const horas: Record<string, number> = {};
+      const horas: Record<string, {positivo: number, neutro: number, negativo: number}> = {};
       for (let i = 0; i < 24; i++) {
-        horas[`${i}h`] = 0;
+        horas[`${i}h`] = {positivo: 0, neutro: 0, negativo: 0};
       }
 
       chamadosFiltrados.forEach(chamado => {
+        if (!chamado.sentimento_cliente) return;
         const data = parseISO(chamado.data_abertura);
         const hora = format(data, 'H');
-        horas[`${hora}h`]++;
+        const sentimento = chamado.sentimento_cliente.toLowerCase();
+        
+        if (sentimento.includes('positiv')) horas[`${hora}h`].positivo++;
+        else if (sentimento.includes('neutr')) horas[`${hora}h`].neutro++;
+        else if (sentimento.includes('negativ')) horas[`${hora}h`].negativo++;
       });
 
       dataFormatada = Object.keys(horas).map(hora => ({
         name: hora,
-        value: horas[hora]
+        positivo: horas[hora].positivo,
+        neutro: horas[hora].neutro,
+        negativo: horas[hora].negativo
       }));
     } else {
       // Cria intervalos conforme o período selecionado
       let intervalos: Date[] = [];
-      let formato: string;
       let nomeIntervalo: (date: Date) => string;
 
-      switch(periodo) {
-        case 'semana':
-          intervalos = eachDayOfInterval({ start: dataInicio, end: dataFim });
-          formato = 'EEE'; // Dia da semana abreviado
-          nomeIntervalo = (date) => format(date, 'EEE (dd/MM)', { locale: ptBR });
-          break;
-        case 'mes':
-          intervalos = eachDayOfInterval({ start: dataInicio, end: dataFim });
-          formato = 'dd/MM'; // Dia e mês
-          nomeIntervalo = (date) => format(date, 'dd/MM');
-          break;
-        case 'trimestre':
-          intervalos = eachMonthOfInterval({ 
-            start: dataInicio, 
-            end: dataFim 
-          });
-          formato = 'MMM'; // Mês abreviado
-          nomeIntervalo = (date) => format(date, 'MMM/yyyy', { locale: ptBR });
-          break;
-        case 'ano':
-          intervalos = eachMonthOfInterval({ start: dataInicio, end: dataFim });
-          formato = 'MMM'; // Mês abreviado
-          nomeIntervalo = (date) => format(date, 'MMM', { locale: ptBR });
-          break;
-        default:
-          intervalos = [];
+      if (selectedRange.start && selectedRange.end) {
+        // Usa intervalo personalizado
+        intervalos = eachDayOfInterval({ start: selectedRange.start, end: selectedRange.end });
+        nomeIntervalo = (date) => format(date, 'dd/MM', { locale: ptBR });
+      } else {
+        // Usa período pré-definido
+        switch(periodo) {
+          case 'semana':
+            intervalos = eachDayOfInterval({ start: dataInicio, end: dataFim });
+            nomeIntervalo = (date) => {
+              const diaSemana = format(date, 'EEE', { locale: ptBR });
+              return `${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1, 3)} (${format(date, 'dd/MM')})`;
+            };
+            break;
+          case 'mes':
+            intervalos = eachDayOfInterval({ start: dataInicio, end: dataFim });
+            nomeIntervalo = (date) => format(date, 'dd/MM');
+            break;
+          case 'trimestre':
+            intervalos = eachMonthOfInterval({ start: dataInicio, end: dataFim });
+            nomeIntervalo = (date) => format(date, 'MMM/yyyy', { locale: ptBR });
+            break;
+          case 'ano':
+            intervalos = eachMonthOfInterval({ start: dataInicio, end: dataFim });
+            nomeIntervalo = (date) => format(date, 'MMM', { locale: ptBR });
+            break;
+          default:
+            intervalos = [];
+        }
       }
 
-      // Conta chamados por intervalo
+      // Conta sentimentos por intervalo
       dataFormatada = intervalos.map(intervalo => {
         const inicio = periodo === 'dia' ? startOfDay(intervalo) : 
                       periodo === 'semana' || periodo === 'mes' ? startOfDay(intervalo) :
@@ -153,15 +181,24 @@ export default function MonthlySalesChart() {
                    periodo === 'semana' || periodo === 'mes' ? endOfDay(intervalo) : 
                    endOfMonth(intervalo);
 
-        const count = chamadosFiltrados.filter(chamado => {
-          if (!chamado.data_abertura) return false;
+        const contagem = { positivo: 0, neutro: 0, negativo: 0 };
+        
+        chamadosFiltrados.forEach(chamado => {
+          if (!chamado.data_abertura || !chamado.sentimento_cliente) return;
           const dataChamado = parseISO(chamado.data_abertura);
-          return dataChamado >= inicio && dataChamado <= fim;
-        }).length;
-
+          if (dataChamado >= inicio && dataChamado <= fim) {
+            const sentimento = chamado.sentimento_cliente.toLowerCase();
+            if (sentimento.includes('positiv')) contagem.positivo++;
+            else if (sentimento.includes('neutr')) contagem.neutro++;
+            else if (sentimento.includes('negativ')) contagem.negativo++;
+          }
+        });
+        
         return {
           name: nomeIntervalo(intervalo),
-          value: count,
+          positivo: contagem.positivo,
+          neutro: contagem.neutro,
+          negativo: contagem.negativo,
           date: intervalo
         };
       });
@@ -170,99 +207,109 @@ export default function MonthlySalesChart() {
     setTrafficData(dataFormatada);
   };
 
-// Adicione estas classes ao seu componente
-const renderDatePicker = () => {
-  const pickerClasses = "bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full max-w-[180px]";
-  const wrapperClasses = "flex items-center gap-6 flex-wrap";
+  const renderDatePicker = () => {
+    const pickerClasses = "bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full max-w-[180px]";
+    const wrapperClasses = "flex items-center gap-6 flex-wrap";
 
-  return (
-    <div className={`${wrapperClasses} dark:text-white`}>
-      {periodo === 'dia' && (
-        <>
-          <span>Dia:</span>
-          <DatePicker
-            selected={dataSelecionada}
-            onChange={(date) => setDataSelecionada(date || new Date())}
-            dateFormat="dd/MM/yyyy"
-            className={`${pickerClasses} dark:text-white`}
-            popperClassName="!z-50 w-full max-w-[280px]"
-            locale={ptBR}
-          />
-        </>
-      )}
-
-      {periodo === 'semana' && (
-        <>
-          <span className='dark:text-white'>Semana começando em:</span>
-          <DatePicker
-            selected={dataSelecionada}
-            onChange={(date) => setDataSelecionada(date || new Date())}
-            dateFormat="dd/MM/yyyy"
-            className={`${pickerClasses} dark:text-white`}
-            popperClassName="!z-50 w-full max-w-[280px]"
-            locale={ptBR}
-          />
-          <span className="text-sm text-black dark:text-white">
-            {format(dataInicio, 'dd/MM')} a {format(dataFim, 'dd/MM/yyyy')}
+    // Se houver intervalo global, não mostra os seletores locais
+    if (selectedRange.start && selectedRange.end) {
+      return (
+        <div className={`${wrapperClasses} dark:text-white`}>
+          <span>
+            {format(selectedRange.start, 'dd/MM/yyyy')} - {format(selectedRange.end, 'dd/MM/yyyy')}
           </span>
-        </>
-      )}
+        </div>
+      );
+    }
 
-      {periodo === 'mes' && (
-        <>
-          <span>Mês:</span>
-          <DatePicker
-            selected={dataSelecionada}
-            onChange={(date) => setDataSelecionada(date || new Date())}
-            dateFormat="MM/yyyy"
-            showMonthYearPicker
-            className={`${pickerClasses} dark:text-white`}
-            popperClassName="!z-50 w-full max-w-[280px]"
-            locale={ptBR}
-          />
-        </>
-      )}
+    return (
+      <div className={`${wrapperClasses} dark:text-white`}>
+        {periodo === 'dia' && (
+          <>
+            <span>Dia:</span>
+            <DatePicker
+              selected={dataSelecionada}
+              onChange={(date) => setDataSelecionada(date || new Date())}
+              dateFormat="dd/MM/yyyy"
+              className={`${pickerClasses} dark:text-white`}
+              popperClassName="!z-50 w-full max-w-[280px]"
+              locale={ptBR}
+            />
+          </>
+        )}
 
-      {periodo === 'trimestre' && (
-        <>
-          <span>Trimestre começando em:</span>
-          <DatePicker
-            selected={dataSelecionada}
-            onChange={(date) => setDataSelecionada(date || new Date())}
-            dateFormat="MM/yyyy"
-            showMonthYearPicker
-            className={`${pickerClasses} dark:text-white`}
-            popperClassName="!z-50 w-full max-w-[280px]"
-            locale={ptBR}
-          />
-          <span className="text-sm text-black dark:text-white">
-            {format(dataInicio, 'MMM/yyyy', { locale: ptBR })} a {format(dataFim, 'MMM/yyyy', { locale: ptBR })}
-          </span>
-        </>
-      )}
+        {periodo === 'semana' && (
+          <>
+            <span className='dark:text-white'>Semana começando em:</span>
+            <DatePicker
+              selected={dataSelecionada}
+              onChange={(date) => setDataSelecionada(date || new Date())}
+              dateFormat="dd/MM/yyyy"
+              className={`${pickerClasses} dark:text-white`}
+              popperClassName="!z-50 w-full max-w-[280px]"
+              locale={ptBR}
+            />
+            <span className="text-sm text-black dark:text-white">
+              {format(dataInicio, 'dd/MM')} a {format(dataFim, 'dd/MM/yyyy')}
+            </span>
+          </>
+        )}
 
-      {periodo === 'ano' && (
-        <>
-          <span>Ano:</span>
-          <DatePicker
-            selected={dataSelecionada}
-            onChange={(date) => setDataSelecionada(date || new Date())}
-            dateFormat="yyyy"
-            showYearPicker
-            className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-[90px]"
-            popperClassName="!z-50 w-full max-w-[280px]"
-            locale={ptBR}
-          />
-        </>
-      )}
-    </div>
-  );
-};
+        {periodo === 'mes' && (
+          <>
+            <span>Mês:</span>
+            <DatePicker
+              selected={dataSelecionada}
+              onChange={(date) => setDataSelecionada(date || new Date())}
+              dateFormat="MM/yyyy"
+              showMonthYearPicker
+              className={`${pickerClasses} dark:text-white`}
+              popperClassName="!z-50 w-full max-w-[280px]"
+              locale={ptBR}
+            />
+          </>
+        )}
+
+        {periodo === 'trimestre' && (
+          <>
+            <span>Trimestre começando em:</span>
+            <DatePicker
+              selected={dataSelecionada}
+              onChange={(date) => setDataSelecionada(date || new Date())}
+              dateFormat="MM/yyyy"
+              showMonthYearPicker
+              className={`${pickerClasses} dark:text-white`}
+              popperClassName="!z-50 w-full max-w-[280px]"
+              locale={ptBR}
+            />
+            <span className="text-sm text-black dark:text-white">
+              {format(dataInicio, 'MMM/yyyy', { locale: ptBR })} a {format(dataFim, 'MMM/yyyy', { locale: ptBR })}
+            </span>
+          </>
+        )}
+
+        {periodo === 'ano' && (
+          <>
+            <span>Ano:</span>
+            <DatePicker
+              selected={dataSelecionada}
+              onChange={(date) => setDataSelecionada(date || new Date())}
+              dateFormat="yyyy"
+              showYearPicker
+              className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-[90px]"
+              popperClassName="!z-50 w-full max-w-[280px]"
+              locale={ptBR}
+            />
+          </>
+        )}
+      </div>
+    );
+  };
 
   if (isLoading) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg dark:text-white font-medium mb-4">Tráfego de Chamados</h3>
+        <h3 className="text-lg dark:text-white font-medium mb-4">Emoções por Período</h3>
         <div className="h-80 bg-gray-100 dark:bg-gray-700 animate-pulse"></div>
       </div>
     );
@@ -271,7 +318,7 @@ const renderDatePicker = () => {
   if (error) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg dark:text-white font-medium mb-4">Tráfego de Chamados</h3>
+        <h3 className="text-lg dark:text-white font-medium mb-4">Emoções por Período</h3>
         <div className="text-center py-8 text-red-500">
           <p>{error}</p>
         </div>
@@ -282,19 +329,21 @@ const renderDatePicker = () => {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2">
       <div className="flex justify-between items-center mb-2">
-        <h3 className="text-lg dark:text-white font-medium">Tráfego de Chamados</h3>
+        <h3 className="text-lg dark:text-white font-medium">Emoções por Período</h3>
         <div className="flex items-center gap-2">
-          <select 
-            value={periodo}
-            onChange={(e) => handlePeriodoChange(e.target.value as Periodo)}
-            className="bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="dia">Dia</option>
-            <option value="semana">Semana</option>
-            <option value="mes">Mês</option>
-            <option value="trimestre">Trimestre</option>
-            <option value="ano">Ano</option>
-          </select>
+          {!(selectedRange.start && selectedRange.end) && (
+            <select 
+              value={periodo}
+              onChange={(e) => handlePeriodoChange(e.target.value as Periodo)}
+              className="bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="dia">Dia</option>
+              <option value="semana">Semana</option>
+              <option value="mes">Mês</option>
+              <option value="trimestre">Trimestre</option>
+              <option value="ano">Ano</option>
+            </select>
+          )}
           {renderDatePicker()}
         </div>
       </div>
@@ -312,9 +361,23 @@ const renderDatePicker = () => {
             <Legend />
             <Line 
               type="monotone" 
-              dataKey="value" 
-              stroke="#3182ce" 
-              name="Chamados" 
+              dataKey="positivo" 
+              stroke="#4CAF50" 
+              name="Positivo" 
+              activeDot={{ r: 8 }} 
+            />
+            <Line 
+              type="monotone" 
+              dataKey="neutro" 
+              stroke="#FFEB3B" 
+              name="Neutro" 
+              activeDot={{ r: 8 }} 
+            />
+            <Line 
+              type="monotone" 
+              dataKey="negativo" 
+              stroke="#F44336" 
+              name="Negativo" 
               activeDot={{ r: 8 }} 
             />
           </LineChart>
