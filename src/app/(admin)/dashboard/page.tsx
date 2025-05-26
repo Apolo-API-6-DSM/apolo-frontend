@@ -44,7 +44,7 @@ function DashboardDateFilter() {
     <div className="mb-4 flex items-end gap-3">
       <div className="flex gap-4">
         <div className="flex flex-col">
-          <label className="text-xs mb-1 text-gray-600 dark:text-gray-300">Início</label>
+          <label className="text-xs mb-1 text-gray-600 dark:text-white">Início</label>
           <DatePicker
             selected={range.start}
             onChange={date => setRange(r => ({ ...r, start: date }))}
@@ -53,7 +53,7 @@ function DashboardDateFilter() {
             timeIntervals={15}
             dateFormat="dd/MM/yyyy HH:mm"
             placeholderText="Data/Hora Início"
-            className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-52 z-[1000]"
+            className="bg-white dark:text-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-52 z-[1000]"
             maxDate={new Date()}
             isClearable
             locale={ptBR}
@@ -61,7 +61,7 @@ function DashboardDateFilter() {
           />
         </div>
         <div className="flex flex-col">
-          <label className="text-xs mb-1 text-gray-600 dark:text-gray-300">Fim</label>
+          <label className="text-xs mb-1 text-gray-600 dark:text-white">Fim</label>
           <DatePicker
             selected={range.end}
             onChange={date => setRange(r => ({ ...r, end: date }))}
@@ -70,7 +70,7 @@ function DashboardDateFilter() {
             timeIntervals={15}
             dateFormat="dd/MM/yyyy HH:mm"
             placeholderText="Data/Hora Fim"
-            className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-52 z-[1000]"
+            className="bg-white dark:text-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-52 z-[1000]"
             maxDate={new Date()}
             isClearable
             locale={ptBR}

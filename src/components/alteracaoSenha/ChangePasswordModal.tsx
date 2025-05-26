@@ -57,8 +57,8 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="max-w-[500px]">
-      <div className="p-6 bg-white dark:bg-gray-900 rounded-2xl">
-        <h3 className="text-xl font-semibold mb-4">Alterar Senha</h3>
+      <div className="p-6 bg-white dark:text-white dark:bg-gray-900 rounded-2xl">
+        <h3 className="text-xl font-semibold dark:text-white mb-4">Alterar Senha</h3>
         
         {error && (
           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">

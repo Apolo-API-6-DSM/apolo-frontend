@@ -3,6 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { FaSmile, FaCommentDots, FaClock, FaUser } from "react-icons/fa";
+import { useAuth } from "@/hooks/useAuth";
 
 interface DetalhesChamadoProps {
   chamado: any;
@@ -42,12 +43,30 @@ const cleanMessage = (text: string) => {
   }
 };
 
+const getUserRole = (): string | null => {
+  if (typeof window === "undefined") return null;
+  
+  const token = localStorage.getItem("access_token");
+  if (!token) return null;
+  
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.papel || null;
+  } catch {
+    return null;
+  }
+};
+
 const DetalhesChamadoAlternativo: React.FC<DetalhesChamadoProps> = ({ chamado }) => {
   const router = useRouter();
+  useAuth(); // Usa o hook de autenticação
+  
+  const userRole = getUserRole();
+  const isAdmin = userRole === 'admin';
 
   const periodoData = chamado.ultima_atualizacao
-  ? `${formatDate(chamado.data_abertura)} - ${formatDate(chamado.ultima_atualizacao)}`
-  : formatDate(chamado.data_abertura);
+    ? `${formatDate(chamado.data_abertura)} - ${formatDate(chamado.ultima_atualizacao)}`
+    : formatDate(chamado.data_abertura);
 
   const normalizeStatus = (status: string | undefined): string => {
     if (!status) return "Sem status";
@@ -60,6 +79,22 @@ const DetalhesChamadoAlternativo: React.FC<DetalhesChamadoProps> = ({ chamado })
     if (normalized === "CONCLUIDO") return "Concluído";
     if (normalized === "EM ABERTO") return "Em aberto";
     return status;
+  };
+
+  const getTipoImportacaoColorClass = (tipo: string | undefined): string => {
+    if (!tipo) return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
+    
+    const normalizedTipo = tipo.toLowerCase().trim();
+    
+    if (normalizedTipo === "jira") {
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+    }
+    
+    if (normalizedTipo === "alternativo") {
+      return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
+    }
+    
+    return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
   };
 
   const getStatusColorClass = (status: string | undefined): string => {
@@ -140,7 +175,7 @@ const DetalhesChamadoAlternativo: React.FC<DetalhesChamadoProps> = ({ chamado })
           </div>
         </div>
 
-        <span className="block w-full bg-cover dark:text-white text-right text-base">
+        <span className={`block w-full py-2 px-3 rounded-lg text-center text-base font-medium ${getTipoImportacaoColorClass(chamado.tipo_importacao)}`}>
           {chamado.tipo_importacao || "Não atribuído"}
         </span>
 
@@ -159,17 +194,32 @@ const DetalhesChamadoAlternativo: React.FC<DetalhesChamadoProps> = ({ chamado })
         </div>
       </div>
 
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
-        <h4 className="mb-4 text-md font-medium text-gray-800 dark:text-white/90">Descrição</h4>
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
-          <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">{cleanMessage(chamado.descricao)}</pre>
+       {isAdmin ? (
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
+          <h4 className="mb-4 text-md font-medium text-gray-800 dark:text-white/90">Descrição (Original - Admin)</h4>
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+            <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
+              {cleanMessage(chamado.descricao_original)}
+            </pre>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
+          <h4 className="mb-4 text-md font-medium text-gray-800 dark:text-white/90">Descrição (Processada - Viewer)</h4>
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+            <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
+              {cleanMessage(chamado.descricao_processada)}
+            </pre>
+          </div>
+        </div>
+      )}
 
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
         <h4 className="mb-4 text-md font-medium text-gray-800 dark:text-white/90">Solução</h4>
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
-          <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">{cleanMessage(chamado.solucao)}</pre>
+          <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
+            {cleanMessage(chamado.solucao)}
+          </pre>
         </div>
       </div>
     </div>

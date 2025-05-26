@@ -56,6 +56,19 @@ const CardChamados: React.FC<CardChamadosProps> = ({ chamado }) => {
 
       return <img src={src} alt={sentimento} className="w-5 h-5" />;
     };
+    
+    const formatarSentimento = (sentimento?: string) => {
+      if (!sentimento) return '';
+      
+      const s = sentimento.toLowerCase();
+      
+      if (s === 'positiva') return 'Positivo';
+      if (s === 'negativa') return 'Negativo';
+      if (s === 'neutra') return 'Neutro';
+      
+      // Caso já esteja no formato desejado ou seja outro valor
+      return sentimento.charAt(0).toUpperCase() + sentimento.slice(1).toLowerCase();
+    };
   
     const getStatusBgColor = (status: string) => {
       const lowerStatus = status.toLowerCase();
@@ -80,7 +93,7 @@ const CardChamados: React.FC<CardChamadosProps> = ({ chamado }) => {
   
             <div className="flex items-center gap-1">
               {getSentimentoEmoji(chamado.sentimento)}
-              <span className="text-gray-700 dark:text-gray-300">{chamado.sentimento}</span>
+              <span className="text-gray-700 dark:text-gray-300">{formatarSentimento(chamado.sentimento)}</span>
             </div>
   
             <div className="flex items-center gap-1">

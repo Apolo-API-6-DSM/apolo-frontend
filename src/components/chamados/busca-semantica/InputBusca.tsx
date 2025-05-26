@@ -23,7 +23,7 @@ export default function InputBusca() {
         ref={inputRef}
         type="text"
         placeholder="Faça sua busca semântica"
-        className="h-11 w-120 rounded-lg border border-gray-300 px-4 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="h-11 w-120 rounded-lg border dark:text-white border-gray-300 px-4 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
       <button
         type="submit"

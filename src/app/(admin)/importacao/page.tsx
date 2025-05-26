@@ -178,7 +178,7 @@ export default function ImportacaoPage() {
               value={fileName}
               onChange={handleFileNameChange}
               placeholder="Ex: Importação Jira 2024"
-              className={`w-full p-2 border rounded-lg dark:bg-gray-800 dark:text-gray-300 ${
+              className={`w-full p-2 border rounded-lg dark:bg-gray-800 dark:text-white ${
                 errors.fileName ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'
               }`}
               required

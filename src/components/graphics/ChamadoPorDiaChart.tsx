@@ -163,7 +163,7 @@ const ChamadoPorDiaChart = () => {
             selected={dataLocal}
             onChange={date => setDataLocal(date ?? new Date())}
             dateFormat="dd/MM/yyyy"
-            className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="bg-white dark:text-white dark:bg-gray-700 border border-gray-300 dark:border-white rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             locale={ptBR}
             maxDate={new Date()}
           />

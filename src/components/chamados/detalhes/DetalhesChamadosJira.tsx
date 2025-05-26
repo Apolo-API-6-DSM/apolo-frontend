@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaSmile, FaCommentDots, FaClock, FaUser } from "react-icons/fa";
-
+import { useAuth } from "@/hooks/useAuth";
 
 interface DetalhesChamadoProps {
   chamado: any;
@@ -33,18 +33,46 @@ const cleanMessage = (text: string) => {
 
   try {
     return text
-      .replace(/\{color\}/g, "")
-      .replace(/\\/g, "")
-      .replace(/\|/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
+      // Remove todas as variações da palavra 'color' (case insensitive)
+      .replace(/\bcolor\b/gi, '')
+      // Remove outros padrões indesejados
+      .replace(/\{color\}/g, '')
+      .replace(/\\/g, '')
+      .replace(/\|/g, ' ')
+      // Remove múltiplos espaços em branco
+      .replace(/\s+/g, ' ')
+      // Remove espaços no início e fim
+      .trim()
+      // Remove pontuação estranha que possa ter sobrado
+      .replace(/^\W+/, '')
+      .replace(/\W+$/, '')
+      // Capitaliza a primeira letra
+      .replace(/^./, (match) => match.toUpperCase());
   } catch (error) {
     return text;
   }
 };
 
+const getUserRole = (): string | null => {
+  if (typeof window === "undefined") return null;
+  
+  const token = localStorage.getItem("access_token");
+  if (!token) return null;
+  
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.papel || null;
+  } catch {
+    return null;
+  }
+};
+
 const DetalhesChamadoJira: React.FC<DetalhesChamadoProps> = ({ chamado }) => {
   const router = useRouter();
+  useAuth(); // Adiciona a verificação de autenticação
+  
+  const userRole = getUserRole();
+  const isAdmin = userRole === 'admin';
 
   const normalizeStatus = (status: string | undefined): string => {
     if (!status) return "Sem status";
@@ -81,21 +109,53 @@ const DetalhesChamadoJira: React.FC<DetalhesChamadoProps> = ({ chamado }) => {
     ? `${formatDate(chamado.data_abertura)} - ${formatDate(chamado.ultima_atualizacao)}`
     : formatDate(chamado.data_abertura);
 
-    const getSentimentoEmoji = (sentimento?: string) => {
-      if (!sentimento || typeof sentimento !== 'string') {
-        return <FaSmile className="text-gray-500 dark:text-gray-400 w-5 h-5" />;
-      }
+  const getSentimentoEmoji = (sentimento?: string) => {
+    if (!sentimento || typeof sentimento !== 'string') {
+      return <FaSmile className="text-gray-500 dark:text-gray-400 w-5 h-5" />;
+    }
 
-      const s = sentimento.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
-      let src = '';
+    const s = sentimento.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+    let src = '';
 
-      if (["positivo", "positiva"].includes(s)) src = '/images/emotions/Happy.png';
-      else if (["neutro", "neutra"].includes(s)) src = '/images/emotions/Meh.png';
-      else if (["negativo", "negativa"].includes(s)) src = '/images/emotions/Sad.png';
-      else return <FaSmile className="text-gray-500 dark:text-gray-400 w-5 h-5" />;
+    if (["positivo", "positiva"].includes(s)) src = '/images/emotions/Happy.png';
+    else if (["neutro", "neutra"].includes(s)) src = '/images/emotions/Meh.png';
+    else if (["negativo", "negativa"].includes(s)) src = '/images/emotions/Sad.png';
+    else return <FaSmile className="text-gray-500 dark:text-gray-400 w-5 h-5" />;
 
-      return <img src={src} alt={sentimento} className="w-5 h-5" />;
-    };
+    return <img src={src} alt={sentimento} className="w-5 h-5" />;
+  };
+
+  const getTipoImportacaoColorClass = (tipo: string | undefined): string => {
+    if (!tipo) return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
+    
+    const normalizedTipo = tipo.toLowerCase().trim();
+    
+    if (normalizedTipo === "jira") {
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+    }
+    
+    if (normalizedTipo === "alternativo") {
+      return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
+    }
+    
+    return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
+  };
+
+  const formatarSentimento = (sentimento_cliente?: string) => {
+    if (!sentimento_cliente) return '';
+    
+    const s = sentimento_cliente.toLowerCase();
+    
+    if (s === 'positiva') return 'Positivo';
+    if (s === 'negativa') return 'Negativo';
+    if (s === 'neutra') return 'Neutro';
+    
+    return sentimento_cliente.charAt(0).toUpperCase() + sentimento_cliente.slice(1).toLowerCase();
+  };
+
+  useEffect(() => {
+    console.log("Dados do chamado:", chamado);
+  }, [chamado]);
 
   return (
     <div className="space-y-6">
@@ -121,8 +181,10 @@ const DetalhesChamadoJira: React.FC<DetalhesChamadoProps> = ({ chamado }) => {
 
         <div className="flex flex-wrap dark:text-white gap-6 mb-6">
           <div className="flex items-center gap-1">
-              {getSentimentoEmoji(chamado.sentimento)}
-              <span className="text-gray-700 dark:text-gray-300">{chamado.sentimento}</span>
+            {getSentimentoEmoji(chamado.sentimento_cliente)}
+            <span className="text-gray-700 dark:text-gray-300">
+              {formatarSentimento(chamado.sentimento_cliente) || "Não informado"}
+            </span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -141,7 +203,7 @@ const DetalhesChamadoJira: React.FC<DetalhesChamadoProps> = ({ chamado }) => {
           </div>
         </div>
 
-        <span className="block w-full bg-cover dark:text-white text-right text-base">
+        <span className={`block w-full py-2 px-3 rounded-lg text-center text-base font-medium ${getTipoImportacaoColorClass(chamado.tipo_importacao)}`}>
           {chamado.tipo_importacao || "Não atribuído"}
         </span>
 
@@ -161,10 +223,14 @@ const DetalhesChamadoJira: React.FC<DetalhesChamadoProps> = ({ chamado }) => {
 
       {/* Mensagem */}
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
-        <h4 className="mb-4 text-md font-medium text-gray-800 dark:text-white/90">Mensagem</h4>
+        <h4 className="mb-4 text-md font-medium text-gray-800 dark:text-white/90">
+          {isAdmin ? "Mensagem Completa (Admin)" : "Mensagem Processada (Viewer)"}
+        </h4>
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
           <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
-            {cleanMessage(chamado.mensagem_limpa)}
+            {isAdmin 
+              ? cleanMessage(chamado.mensagem_limpa) 
+              : cleanMessage(chamado.descricao_dataset)}
           </pre>
         </div>
       </div>

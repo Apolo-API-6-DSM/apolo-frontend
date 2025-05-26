@@ -84,12 +84,7 @@ export default function EditarUsuarioPage() {
         nome: usuario.nome,
         email: usuario.email
       });
-      
-      // Atualiza status se necessário
-      if (usuario.status !== undefined) {
-        await userService.toggleStatus(usuario.id);
-      }
-      
+
       setSuccess("Usuário atualizado com sucesso!");
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
@@ -189,29 +184,59 @@ export default function EditarUsuarioPage() {
             {/* Perfil */}
             <div>
               <Label>Perfil</Label>
-              <select
-                name="papel"
-                value={usuario.papel}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-md bg-white dark:bg-gray-800 dark:border-gray-700"
-              >
-                <option value="viewer">Visualizador</option>
-                <option value="admin">Administrador</option>
-              </select>
+              {usuario.papel === 'viewer' && (
+                <select
+                  name="papel"
+                  value={usuario.papel}
+                  className="dark:text-white w-full p-2 border border-gray-300 rounded-md bg-white dark:bg-gray-800 dark:border-gray-700"
+                >
+                  <option value="viewer">Visualizador</option>
+                </select>
+              )}
+              {usuario.papel === 'admin' && (
+                <select
+                  name="papel"
+                  value={usuario.papel}
+                  className="dark:text-white w-full p-2 border border-gray-300 rounded-md bg-white dark:bg-gray-800 dark:border-gray-700"
+                >
+                  <option value="admin">Administrador</option>
+                </select>
+              )}
             </div>
 
             {/* Status */}
             <div>
               <Label>Status</Label>
-              <select
-                name="status"
-                value={usuario.status ? "ativo" : "inativo"}
-                onChange={(e) => setUsuario(prev => ({ ...prev, status: e.target.value === "ativo" }))}
-                className="w-full p-2 border border-gray-300 rounded-md bg-white dark:bg-gray-800 dark:border-gray-700"
-              >
-                <option value="ativo">Ativo</option>
-                <option value="inativo">Inativo</option>
-              </select>
+              {usuario.status && (
+                <select
+                  name="status"
+                  value="ativo"
+                  onChange={(e) =>
+                    setUsuario((prev) => ({
+                      ...prev,
+                      status: e.target.value === "ativo",
+                    }))
+                  }
+                  className="dark:text-white w-full p-2 border border-gray-300 rounded-md bg-white dark:bg-gray-800 dark:border-gray-700"
+                >
+                  <option value="ativo">Ativo</option>
+                </select>
+              )}
+              {!usuario.status && (
+                <select
+                  name="status"
+                  value="inativo"
+                  onChange={(e) =>
+                    setUsuario((prev) => ({
+                      ...prev,
+                      status: e.target.value === "ativo",
+                    }))
+                  }
+                  className="dark:text-white w-full p-2 border border-gray-300 rounded-md bg-white dark:bg-gray-800 dark:border-gray-700"
+                >
+                  <option value="inativo">Inativo</option>
+                </select>
+              )}
             </div>
 
             {/* Estatísticas */}
@@ -256,7 +281,7 @@ export default function EditarUsuarioPage() {
 
         {/* Seção de Alteração de Senha */}
         <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
-          <h4 className="text-md font-semibold mb-4">Alterar Senha</h4>
+          <h4 className="text-md font-semibold mb-4 dark:text-white">Alterar Senha</h4>
           
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
@@ -301,7 +326,7 @@ export default function EditarUsuarioPage() {
           <div className="flex justify-end pt-4">
             <Button
               onClick={handlePasswordChange}
-              className="bg-[#00163B] hover:bg-[#001e4f] dark:bg-blue-700 dark:hover:bg-blue-800"
+              className="dark:text-white bg-[#00163B] hover:bg-[#001e4f] dark:bg-blue-700 dark:hover:bg-blue-800"
               disabled={loading || !novaSenha || novaSenha !== confirmarSenha}
             >
               Alterar Senha
