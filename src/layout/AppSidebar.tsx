@@ -6,18 +6,15 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import {
   BoxCubeIcon,
-  CalenderIcon,
-  ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
   ListIcon,
   PageIcon,
   PieChartIcon,
-  PlugInIcon,
-  TableIcon,
   UserCircleIcon,
 } from "../icons/index";
 import { useAuth } from "@/hooks/useAuth";
+import { Contact, Database } from "lucide-react";
 
 type NavItem = {
   name: string;
@@ -40,7 +37,7 @@ const navItems: NavItem[] = [
     path: "/"
   },
   {
-    icon: <GridIcon />,
+    icon: <Database />,
     name: "Dashboard",
     path: "/dashboard"
   },
@@ -54,7 +51,7 @@ const navItems: NavItem[] = [
     requiredRole: "admin"
   },
   {
-    icon: <ListIcon />,
+    icon: <PageIcon />,
     name: "Chamados",
     subItems: [{ name: "Todos Chamados", path: "/chamados/listagem" }],
   },
@@ -64,7 +61,7 @@ const navItems: NavItem[] = [
     path: "/profile",
   },
   {
-    icon: <ListIcon />,
+    icon: <Contact />,
     name: "Viewers",
     subItems: [
       { name: "Listagem", path: "/viewer", pro: false },
@@ -109,6 +106,9 @@ const AppSidebar: React.FC = () => {
 
   useAuth();
 
+  const [isClient, setIsClient] = useState(false);
+  const [filteredNavItems, setFilteredNavItems] = useState<NavItem[]>([]);
+  const [filteredOtherItems, setFilteredOtherItems] = useState<NavItem[]>([]);
   const [openSubmenu, setOpenSubmenu] = useState<{
     type: "main" | "others";
     index: number;
@@ -151,6 +151,20 @@ const AppSidebar: React.FC = () => {
   };
 
   useEffect(() => {
+    setIsClient(true); // Marca que estamos no cliente
+    
+    const userRole = getUserRole();
+    
+    setFilteredNavItems(
+      navItems.filter(item => !item.requiredRole || item.requiredRole === userRole)
+    );
+    
+    setFilteredOtherItems(
+      othersItems.filter(item => !item.requiredRole || item.requiredRole === userRole)
+    );
+  }, []);
+
+  useEffect(() => {
     let submenuMatched = false;
     ["main", "others"].forEach((menuType) => {
       const items = menuType === "main" ? navItems : othersItems;
@@ -186,17 +200,19 @@ const AppSidebar: React.FC = () => {
     }
   }, [openSubmenu]);
 
-  const renderMenuItems = (navItems: NavItem[], menuType: "main" | "others") => {
+  const renderMenuItems = (items: NavItem[], menuType: "main" | "others") => {
+    if (!isClient) return null;
+
     const userRole = getUserRole();
     
     return (
       <ul className="flex flex-col gap-4">
-        {navItems.map((nav, index) => {
+        {items.map((nav, index) => {
           const hasPermission = !nav.requiredRole || nav.requiredRole === userRole;
           if (!hasPermission) return null;
 
           return (
-            <li key={nav.name}>
+            <li key={`${nav.name}-${index}`}>
               {nav.subItems ? (
                 <button
                   onClick={() => handleSubmenuToggle(index, menuType)}
@@ -358,7 +374,7 @@ const AppSidebar: React.FC = () => {
               >
                 {isExpanded || isHovered || isMobileOpen ? "Menu" : <HorizontaLDots />}
               </h2>
-              {renderMenuItems(navItems, "main")}
+              {renderMenuItems(filteredNavItems.length > 0 ? filteredNavItems : navItems, "main")}
             </div>
           </div>
         </nav>
