@@ -4,12 +4,30 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { FaSmile, FaCommentDots, FaClock, FaUser } from "react-icons/fa";
 import { useAuth } from "@/hooks/useAuth";
+import Image from "next/image";
 
-interface DetalhesChamadoProps {
-  chamado: any;
+interface Chamado {
+  id: number;
+  id_importado?: string;
+  status?: string;
+  sentimento_cliente?: string;
+  tipo_documento?: string;
+  data_abertura?: string;
+  ultima_atualizacao?: string;
+  responsavel?: string;
+  tipo_importacao?: string;
+  titulo?: string;
+  sumarizacao?: string;
+  descricao_original?: string;
+  descricao_processada?: string;
+  solucao?: string;
 }
 
-const formatDate = (dateString: string | null | undefined) => {
+interface DetalhesChamadoProps {
+  chamado: Chamado;
+}
+
+const formatDate = (dateString: string | null | undefined): string => {
   if (!dateString) return "Não definida";
   
   try {
@@ -23,12 +41,12 @@ const formatDate = (dateString: string | null | undefined) => {
       hour: "2-digit",
       minute: "2-digit"
     });
-  } catch (error) {
+  } catch {
     return "Data inválida";
   }
 };
 
-const cleanMessage = (text: string) => {
+const cleanMessage = (text: string | undefined): string => {
   if (!text) return "Nenhuma mensagem disponível";
   
   try {
@@ -38,7 +56,7 @@ const cleanMessage = (text: string) => {
       .replace(/\|/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
-  } catch (error) {
+  } catch {
     return text;
   }
 };
@@ -59,7 +77,7 @@ const getUserRole = (): string | null => {
 
 const DetalhesChamadoAlternativo: React.FC<DetalhesChamadoProps> = ({ chamado }) => {
   const router = useRouter();
-  useAuth(); // Usa o hook de autenticação
+  useAuth();
   
   const userRole = getUserRole();
   const isAdmin = userRole === 'admin';
@@ -128,7 +146,15 @@ const DetalhesChamadoAlternativo: React.FC<DetalhesChamadoProps> = ({ chamado })
     else if (["negativo", "negativa"].includes(s)) src = '/images/emotions/Sad.png';
     else return <FaSmile className="text-gray-500 dark:text-gray-400 w-5 h-5" />;
 
-    return <img src={src} alt={sentimento} className="w-5 h-5" />;
+    return (
+      <Image
+        src={src}
+        alt={sentimento}
+        width={20}
+        height={20}
+        className="w-5 h-5"
+      />
+    );
   };
 
   return (

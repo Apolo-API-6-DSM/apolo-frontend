@@ -1,4 +1,3 @@
-// src/components/ChangePasswordModal.tsx
 "use client";
 import React, { useState } from "react";
 import { Modal } from "../ui/modal";
@@ -48,8 +47,9 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
         onClose();
         router.refresh();
       }, 1500);
-    } catch (err) {
-      setError("Erro ao alterar senha");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Erro ao alterar senha";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

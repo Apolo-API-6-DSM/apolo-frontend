@@ -17,7 +17,7 @@ type ChartDataProps = {
     data?: { name: string; quantidade: number }[];
 };
 
-export default function BarChartOne({ data }: ChartDataProps) {
+export default function BarChartOne({}: ChartDataProps) {
     const [period, setPeriod] = useState<"day" | "week" | "month" | "quarter">("day");
 
     const today = new Date();
@@ -90,10 +90,10 @@ export default function BarChartOne({ data }: ChartDataProps) {
             `}</style>
             {/* Seletor de Período */}
             <div className="flex items-center gap-2 mb-4">
-                {["day", "week", "month", "quarter"].map((p) => (
+                {(["day", "week", "month", "quarter"] as const).map((p) => (
                     <button
                         key={p}
-                        onClick={() => handlePeriodChange(p as any)}
+                        onClick={() => handlePeriodChange(p)}
                         className={`px-3 py-1 rounded-full text-sm ${
                             period === p
                                 ? "bg-indigo-600 text-white"

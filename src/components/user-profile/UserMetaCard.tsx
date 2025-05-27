@@ -1,11 +1,14 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { userService } from "@/services/user";
-import { auth } from "@/services/auth";
-import Image from "next/image";
+
+interface User {
+  nome?: string;
+  papel?: string;
+}
 
 export default function UserMetaCard() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

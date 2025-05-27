@@ -1,49 +1,11 @@
 "use client";
 
 import React from "react";
-import dynamic from "next/dynamic";
 import MonthlySalesChartHome from "@/components/graphics/MonthlySalesChartHome";
 import { PizzaTipoChamadoChartHome } from "@/components/graphics/PizzaTipoChamadoChartHome";
 import DemographicCardHome from "@/components/graphics/DemographicCardHome";
 
-// Tipagem dos dados para os gráficos
-type ChartDataItem = { name: string; value: number };
-type ChartDataProps = { data: ChartDataItem[] };
-
-// Helper para carregar componentes de gráfico dinamicamente
-const loadChart = (path: string) =>
-  dynamic<ChartDataProps>(() => import(`@/components/charts/${path}`), {
-    ssr: false,
-    loading: () => (
-      <div className="h-[300px] w-full bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
-    ),
-  });
-
-// Carregamento dinâmico dos gráficos
-const BarChartOne = loadChart("bar/BarChartOne");
-const PieChartOne = loadChart("pieChartOne/PieChartOne");
-const PieChartTwo = loadChart("pieChartTwo/PieChartTwo");
-
 export default function DashboardCharts() {
-  // Dados mockados para os gráficos
-  const barData: ChartDataItem[] = [
-    { name: "Seg", value: 30 },
-    { name: "Ter", value: 45 },
-    { name: "Qua", value: 28 },
-    { name: "Qui", value: 55 },
-    { name: "Sex", value: 40 },
-  ];
-
-  const pieDataOne: ChartDataItem[] = [
-    { name: "Positivo", value: 60 },
-    { name: "Neutro", value: 25 },
-    { name: "Negativo", value: 15 },
-  ];
-
-  const pieDataTwo: ChartDataItem[] = [
-    { name: "Aberto", value: 70 },
-    { name: "Fechado", value: 30 },
-  ];
 
   return (
     <section className="space-y-6">

@@ -3,6 +3,7 @@
 import React from "react";
 import { FaSmile, FaClock } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface CardHomeProps {
   chamado: {
@@ -33,7 +34,7 @@ const CardHome: React.FC<CardHomeProps> = ({ chamado }) => {
         .getMinutes()
         .toString()
         .padStart(2, '0')}`;
-    } catch (e) {
+    } catch {
       return '';
     }
   };
@@ -52,9 +53,11 @@ const CardHome: React.FC<CardHomeProps> = ({ chamado }) => {
     else return <FaSmile className="text-gray-500 dark:text-gray-400 w-5 h-5" />;
 
     return (
-      <img
+      <Image
         src={src}
         alt={sentimento}
+        width={20}
+        height={20}
         className="w-5 h-5"
       />
     );
@@ -73,18 +76,22 @@ const CardHome: React.FC<CardHomeProps> = ({ chamado }) => {
   const getIconColor = () => 'text-gray-600 dark:text-gray-400';
 
   const handleCardClick = () => {
-    router.push(`/chamados/${chamado.id_importado}`);
+    if (chamado.id_importado) {
+      router.push(`/chamados/${chamado.id_importado}`);
+    }
   };
 
   return (
     <div
       className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2"
       onClick={handleCardClick}
+      role="button"
+      tabIndex={0}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <h3 className="font-semibold text-gray-800 dark:text-gray-100">
-            Chamado: {chamado.id_importado}
+            Chamado: {chamado.id_importado || chamado.id}
           </h3>
           {getSentimentoEmoji(chamado.sentimento_cliente)}
         </div>
@@ -99,7 +106,7 @@ const CardHome: React.FC<CardHomeProps> = ({ chamado }) => {
         )}
       </div>
       <h4 className="font-bold text-md text-gray-900 dark:text-gray-100 break-words">
-        Título: {chamado.titulo}
+        Título: {chamado.titulo || 'Sem título'}
       </h4>
       <div className="flex items-center gap-2 text-sm text-black-600 dark:text-gray-300">
         {chamado.tipo_importacao && (
@@ -110,7 +117,7 @@ const CardHome: React.FC<CardHomeProps> = ({ chamado }) => {
         <span>
           {chamado.data_abertura
             ? formatarDataSimples(chamado.data_abertura)
-            : ''}
+            : 'Sem data'}
         </span>
         {chamado.responsavel && (
           <span>

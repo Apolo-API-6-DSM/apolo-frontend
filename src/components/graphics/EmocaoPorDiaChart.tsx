@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { fetchTickets, Chamado } from '@/services/service';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
@@ -9,8 +9,15 @@ import { useDashboardDate } from "@/components/graphics/DashboardDateContext";
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 
+interface EmotionChartData {
+  name: string;
+  positivo: number;
+  neutro: number;
+  negativo: number;
+}
+
 const EmocaoPorDiaChart = () => {
-  const [chartData, setChartData] = useState<any[]>([]);
+  const [chartData, setChartData] = useState<EmotionChartData[]>([]);
   const [allChamados, setAllChamados] = useState<Chamado[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,8 +42,8 @@ const EmocaoPorDiaChart = () => {
         } else {
           throw new Error(result.error);
         }
-      } catch (err: any) {
-        setError(err.message || 'Falha ao carregar os dados.');
+      } catch (err) {
+        setError((err as Error).message || 'Falha ao carregar os dados.');
         console.error('Erro ao buscar chamados:', err);
       } finally {
         setIsLoading(false);
@@ -46,13 +53,7 @@ const EmocaoPorDiaChart = () => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if (allChamados.length > 0 && dataSelecionada) {
-      processEmotionData();
-    }
-  }, [allChamados, dataSelecionada]);
-
-  const processEmotionData = () => {
+  const processEmotionData = useCallback(() => {
     const inicioDia = startOfDay(dataSelecionada);
     const fimDia = endOfDay(dataSelecionada);
 
@@ -64,23 +65,23 @@ const EmocaoPorDiaChart = () => {
     });
 
     // Agrupa por hora do dia
-    const horas: Record<string, {positivo: number, neutro: number, negativo: number}> = {};
+    const horas: Record<string, { positivo: number; neutro: number; negativo: number }> = {};
     for (let i = 0; i < 24; i++) {
-      horas[`${i}h`] = {positivo: 0, neutro: 0, negativo: 0};
+      horas[`${i}h`] = { positivo: 0, neutro: 0, negativo: 0 };
     }
 
     chamadosDoDia.forEach(chamado => {
-      if (!chamado.sentimento_cliente) return;
+      if (!chamado.sentimento_cliente || !chamado.data_abertura) return;
       const data = parseISO(chamado.data_abertura);
       const hora = format(data, 'H');
       const sentimento = chamado.sentimento_cliente.toLowerCase();
-      
+
       if (sentimento.includes('positiv')) horas[`${hora}h`].positivo++;
       else if (sentimento.includes('neutr')) horas[`${hora}h`].neutro++;
       else if (sentimento.includes('negativ')) horas[`${hora}h`].negativo++;
     });
 
-    const dataFormatada = Object.keys(horas).map(hora => ({
+    const dataFormatada: EmotionChartData[] = Object.keys(horas).map(hora => ({
       name: hora,
       positivo: horas[hora].positivo,
       neutro: horas[hora].neutro,
@@ -88,7 +89,13 @@ const EmocaoPorDiaChart = () => {
     }));
 
     setChartData(dataFormatada);
-  };
+  }, [allChamados, dataSelecionada]);
+
+  useEffect(() => {
+    if (allChamados.length > 0 && dataSelecionada) {
+      processEmotionData();
+    }
+  }, [allChamados, dataSelecionada, processEmotionData]);
 
   if (isLoading) {
     return (
@@ -127,36 +134,15 @@ const EmocaoPorDiaChart = () => {
       </div>
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={chartData}
-            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-          >
+          <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
             <YAxis />
             <Tooltip />
             <Legend />
-            <Line
-              type="monotone"
-              dataKey="positivo"
-              stroke="#4CAF50"
-              name="Positivo"
-              activeDot={{ r: 8 }}
-            />
-            <Line
-              type="monotone"
-              dataKey="neutro"
-              stroke="#FFEB3B"
-              name="Neutro"
-              activeDot={{ r: 8 }}
-            />
-            <Line
-              type="monotone"
-              dataKey="negativo"
-              stroke="#F44336"
-              name="Negativo"
-              activeDot={{ r: 8 }}
-            />
+            <Line type="monotone" dataKey="positivo" stroke="#4CAF50" name="Positivo" activeDot={{ r: 8 }} />
+            <Line type="monotone" dataKey="neutro" stroke="#FFEB3B" name="Neutro" activeDot={{ r: 8 }} />
+            <Line type="monotone" dataKey="negativo" stroke="#F44336" name="Negativo" activeDot={{ r: 8 }} />
           </LineChart>
         </ResponsiveContainer>
       </div>

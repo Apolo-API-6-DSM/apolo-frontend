@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { fetchTickets, Chamado } from '@/services/service';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, parseISO, startOfMonth, endOfMonth, startOfYear, endOfYear, eachMonthOfInterval } from 'date-fns';
@@ -9,9 +9,10 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
 type Periodo = 'mes' | 'ano';
+type TrafficData = { name: string; value: number };
 
 export default function MonthlySalesChartHome() {
-  const [trafficData, setTrafficData] = useState<any[]>([]);
+  const [trafficData, setTrafficData] = useState<TrafficData[]>([]);
   const [allChamados, setAllChamados] = useState<Chamado[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [periodo, setPeriodo] = useState<Periodo>('mes');
@@ -33,34 +34,26 @@ export default function MonthlySalesChartHome() {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if (allChamados.length > 0) {
-      processTrafficData();
-    }
-  }, [allChamados, periodo, dataSelecionada]);
-
-  const processTrafficData = () => {
-    const dataInicio = periodo === 'mes' 
-      ? startOfMonth(dataSelecionada) 
+  const processTrafficData = useCallback(() => {
+    const dataInicio = periodo === 'mes'
+      ? startOfMonth(dataSelecionada)
       : startOfYear(dataSelecionada);
-    
-    const dataFim = periodo === 'mes' 
-      ? endOfMonth(dataSelecionada) 
+
+    const dataFim = periodo === 'mes'
+      ? endOfMonth(dataSelecionada)
       : endOfYear(dataSelecionada);
 
-    // Filtra chamados no intervalo selecionado
     const chamadosFiltrados = allChamados.filter(chamado => {
       if (!chamado.data_abertura) return false;
       const dataChamado = parseISO(chamado.data_abertura);
       return dataChamado >= dataInicio && dataChamado <= dataFim;
     });
 
-    // Cria intervalos conforme o período selecionado
-    const intervalos = periodo === 'mes' 
-      ? eachMonthOfInterval({ start: startOfYear(dataSelecionada), end: endOfYear(dataSelecionada) })
-      : eachMonthOfInterval({ start: startOfYear(dataSelecionada), end: endOfYear(dataSelecionada) });
+    const intervalos = eachMonthOfInterval({
+      start: startOfYear(dataSelecionada),
+      end: endOfYear(dataSelecionada),
+    });
 
-    // Conta chamados por intervalo
     const dataFormatada = intervalos.map(intervalo => {
       const inicio = startOfMonth(intervalo);
       const fim = endOfMonth(intervalo);
@@ -77,11 +70,16 @@ export default function MonthlySalesChartHome() {
       };
     });
 
-    setTrafficData(periodo === 'mes' 
+    setTrafficData(periodo === 'mes'
       ? dataFormatada.filter(item => item.name === format(dataSelecionada, 'MMM', { locale: ptBR }))
-      : dataFormatada
-    );
-  };
+      : dataFormatada);
+  }, [allChamados, periodo, dataSelecionada]);
+
+  useEffect(() => {
+    if (allChamados.length > 0) {
+      processTrafficData();
+    }
+  }, [allChamados, periodo, dataSelecionada, processTrafficData]);
 
   if (isLoading) {
     return (

@@ -1,15 +1,19 @@
-// components/ecommerce/MonthlyTarget.tsx
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import { fetchTickets, formatStatus, Chamado } from '@/services/service';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 
+interface StatusData {
+  name: string;
+  value: number;
+}
+
 export default function MonthlyTarget() {
-  const [statusData, setStatusData] = useState<any[]>([]);
+  const [statusData, setStatusData] = useState<StatusData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // Cores padronizadas para status
+
   const colorMap: Record<string, string> = {
     Concluido: '#2196F3',
     Concluído: '#2196F3',
@@ -20,6 +24,7 @@ export default function MonthlyTarget() {
     Neutro: '#FFEB3B',
     Negativo: '#F44336',
   };
+
   const defaultColors = ['#2196F3', '#FF9800', '#9C27B0'];
 
   useEffect(() => {
@@ -28,19 +33,24 @@ export default function MonthlyTarget() {
       try {
         const result = await fetchTickets();
         if (result.success) {
-          const formattedData = result.data.map((chamado: { status: string; }) => ({
+          const formattedData = result.data.map((chamado: { status: string }) => ({
             ...chamado,
             status: formatStatus(chamado.status)
           }));
-          
+
           processStatusData(formattedData);
           setError(null);
         } else {
           throw new Error(result.error);
         }
-      } catch (err: any) {
-        setError(err.message || 'Falha ao carregar os dados de status.');
-        console.error('Erro ao buscar chamados:', err);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+          console.error('Erro ao buscar chamados:', err);
+        } else {
+          setError('Falha ao carregar os dados de status.');
+          console.error('Erro desconhecido ao buscar chamados:', err);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -50,19 +60,19 @@ export default function MonthlyTarget() {
   }, []);
 
   const processStatusData = (data: Chamado[]) => {
-    // Processar dados para o gráfico de status
     const statusCount: Record<string, number> = {};
-    
+
     data.forEach(chamado => {
       if (chamado.status) {
         statusCount[chamado.status] = (statusCount[chamado.status] || 0) + 1;
       }
     });
-    
-    const statusDataArray = Object.keys(statusCount).map(status => ({
+
+    const statusDataArray: StatusData[] = Object.keys(statusCount).map(status => ({
       name: status,
       value: statusCount[status]
     }));
+
     setStatusData(statusDataArray);
   };
 
@@ -87,7 +97,7 @@ export default function MonthlyTarget() {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2" >
+    <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2">
       <h3 className="text-lg font-medium mb-4 dark:text-white text-center">Chamados por Status</h3>
       <div className="h-[500px]">
         <ResponsiveContainer width="100%" height="100%">

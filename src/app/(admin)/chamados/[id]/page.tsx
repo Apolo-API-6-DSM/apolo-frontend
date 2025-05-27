@@ -6,9 +6,23 @@ import DetalhesChamadoJira from "@/components/chamados/detalhes/DetalhesChamados
 import DetalhesChamadoAlternativo from "@/components/chamados/detalhes/DetalhesChamadosAlternativo";
 import { fetchTicketById } from "@/services/service";
 
+interface Chamado {
+  id: number;
+  status: string;
+  sentimento_cliente: string;
+  responsavel: string;
+  tipo_importacao: string;
+  data_abertura: string;
+  ultima_atualizacao: string;
+  titulo?: string;
+  id_importado?: string;
+  tipo_documento?: string;
+  // Adicione outras propriedades conforme necessário
+}
+
 const ChamadoPage = () => {
   const { id } = useParams();
-  const [chamado, setChamado] = useState<any>(null);
+  const [chamado, setChamado] = useState<Chamado | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,9 +34,8 @@ const ChamadoPage = () => {
         console.log("Resultado da API:", result);
         
         if (result.success) {
-          // Verifique a estrutura dos dados recebidos
           console.log("Dados completos recebidos:", result.data);
-          setChamado(result.data.chamado || result.data); // Ajuste para acessar a propriedade correta
+          setChamado(result.data.chamado || result.data);
         } else {
           setError(result.error || "Erro desconhecido.");
         }
@@ -47,12 +60,11 @@ const ChamadoPage = () => {
   if (!chamado) return <div className="p-6">Chamado não encontrado.</div>;
 
   console.log("Dados sendo passados para DetalhesChamado:", chamado);
-  console.log(chamado.tipo_importacao)
-  if (chamado.tipo_importacao === "Jira"){
-    return <DetalhesChamadoJira chamado={chamado} />;
-  } else {
-    return <DetalhesChamadoAlternativo chamado={chamado} />;
-  }
+  console.log(chamado.tipo_importacao);
+  
+  return chamado.tipo_importacao === "Jira" ? 
+    <DetalhesChamadoJira chamado={chamado} /> : 
+    <DetalhesChamadoAlternativo chamado={chamado} />;
 };
 
 export default ChamadoPage;

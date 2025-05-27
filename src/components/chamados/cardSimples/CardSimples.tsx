@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import React from "react";
-import { FaSmile, FaCommentDots, FaClock, FaUser } from "react-icons/fa";
+import Image from 'next/image';
 
 interface CardSimplesProps {
   chamado: {
@@ -62,7 +62,7 @@ const CardSimples: React.FC<CardSimplesProps> = ({ chamado }) => {
     try {
       const data = new Date(dataISO);
       return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-    } catch (e) {
+    } catch {
       return dataISO;
     }
   };
@@ -82,10 +82,11 @@ const CardSimples: React.FC<CardSimplesProps> = ({ chamado }) => {
         <h5 className="text-lg font-semibold text-gray-800 dark:text-white/90 flex items-center space-x-2">
           <span>CHAMADO {chamado.id}</span>
           {getSentimentoEmoji(chamado.sentimento) && (
-            <img
+            <Image
               src={getSentimentoEmoji(chamado.sentimento)!}
-              alt={chamado.sentimento}
-              className="w-6 h-6"
+              alt={chamado.sentimento || 'Sentimento'}
+              width={24}
+              height={24}
             />
           )}
         </h5>

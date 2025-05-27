@@ -4,12 +4,30 @@ import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaSmile, FaCommentDots, FaClock, FaUser } from "react-icons/fa";
 import { useAuth } from "@/hooks/useAuth";
+import Image from "next/image";
 
-interface DetalhesChamadoProps {
-  chamado: any;
+interface Chamado {
+  id: number;
+  id_importado?: string;
+  status?: string;
+  sentimento_cliente?: string;
+  tipo_documento?: string;
+  data_abertura?: string;
+  ultima_atualizacao?: string;
+  responsavel?: string;
+  tipo_importacao?: string;
+  titulo?: string;
+  sumarizacao?: string;
+  mensagem_limpa?: string;
+  descricao_dataset?: string;
+  comentarios?: string[];
 }
 
-const formatDate = (dateString: string | null | undefined) => {
+interface DetalhesChamadoProps {
+  chamado: Chamado;
+}
+
+const formatDate = (dateString: string | null | undefined): string => {
   if (!dateString) return "Não definida";
 
   try {
@@ -23,33 +41,27 @@ const formatDate = (dateString: string | null | undefined) => {
       hour: "2-digit",
       minute: "2-digit",
     });
-  } catch (error) {
+  } catch {
     return "Data inválida";
   }
 };
 
-const cleanMessage = (text: string) => {
+const cleanMessage = (text: string | undefined): string => {
   if (!text) return "Nenhuma mensagem disponível.";
 
   try {
     return text
-      // Remove todas as variações da palavra 'color' (case insensitive)
       .replace(/\bcolor\b/gi, '')
-      // Remove outros padrões indesejados
       .replace(/\{color\}/g, '')
       .replace(/\\/g, '')
       .replace(/\|/g, ' ')
-      // Remove múltiplos espaços em branco
       .replace(/\s+/g, ' ')
-      // Remove espaços no início e fim
       .trim()
-      // Remove pontuação estranha que possa ter sobrado
       .replace(/^\W+/, '')
       .replace(/\W+$/, '')
-      // Capitaliza a primeira letra
       .replace(/^./, (match) => match.toUpperCase());
-  } catch (error) {
-    return text;
+  } catch {
+    return text || "Nenhuma mensagem disponível.";
   }
 };
 
@@ -69,7 +81,7 @@ const getUserRole = (): string | null => {
 
 const DetalhesChamadoJira: React.FC<DetalhesChamadoProps> = ({ chamado }) => {
   const router = useRouter();
-  useAuth(); // Adiciona a verificação de autenticação
+  useAuth();
   
   const userRole = getUserRole();
   const isAdmin = userRole === 'admin';
@@ -122,7 +134,15 @@ const DetalhesChamadoJira: React.FC<DetalhesChamadoProps> = ({ chamado }) => {
     else if (["negativo", "negativa"].includes(s)) src = '/images/emotions/Sad.png';
     else return <FaSmile className="text-gray-500 dark:text-gray-400 w-5 h-5" />;
 
-    return <img src={src} alt={sentimento} className="w-5 h-5" />;
+    return (
+      <Image
+        src={src}
+        alt={sentimento}
+        width={20}
+        height={20}
+        className="w-5 h-5"
+      />
+    );
   };
 
   const getTipoImportacaoColorClass = (tipo: string | undefined): string => {
@@ -141,7 +161,7 @@ const DetalhesChamadoJira: React.FC<DetalhesChamadoProps> = ({ chamado }) => {
     return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
   };
 
-  const formatarSentimento = (sentimento_cliente?: string) => {
+  const formatarSentimento = (sentimento_cliente?: string): string => {
     if (!sentimento_cliente) return '';
     
     const s = sentimento_cliente.toLowerCase();

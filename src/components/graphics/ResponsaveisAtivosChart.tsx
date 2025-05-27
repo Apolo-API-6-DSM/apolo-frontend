@@ -19,9 +19,10 @@ export default function ResponsaveisAtivosCard() {
                 } else {
                     throw new Error(result.error || 'Erro ao buscar os dados.');
                 }
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error('Erro ao buscar chamados:', err);
-                setError(err.message || 'Falha ao carregar os dados.');
+                const errorMessage = err instanceof Error ? err.message : 'Falha ao carregar os dados.';
+                setError(errorMessage);
             } finally {
                 setIsLoading(false);
             }
@@ -32,13 +33,13 @@ export default function ResponsaveisAtivosCard() {
 
     const processResponsaveisData = (data: Chamado[]) => {
         const responsaveisUnicos = new Set<string>();
-        
+
         data.forEach(chamado => {
             if (chamado.responsavel && chamado.responsavel.trim() !== '') {
                 responsaveisUnicos.add(chamado.responsavel.trim());
             }
         });
-        
+
         setTotalResponsaveis(responsaveisUnicos.size);
     };
 

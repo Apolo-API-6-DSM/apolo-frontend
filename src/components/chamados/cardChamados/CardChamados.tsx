@@ -22,7 +22,7 @@ const CardChamados: React.FC<CardChamadosProps> = ({ chamado }) => {
 
   const handleVerMais = () => {
     router.push(`/chamados/${chamado.id.toString()}`);
-};
+  };
 
   const formatarData = (dataISO: string) => {
     if (!dataISO) return '';
@@ -30,7 +30,7 @@ const CardChamados: React.FC<CardChamadosProps> = ({ chamado }) => {
     try {
       const data = new Date(dataISO);
       return data.toLocaleDateString('pt-BR');
-    } catch (e) {
+    } catch {
       return dataISO;
     }
   };

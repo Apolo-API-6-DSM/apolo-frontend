@@ -4,12 +4,18 @@ import React, { useState, useEffect } from 'react';
 import { fetchTickets, formatStatus, Chamado } from '@/services/service';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 
+interface ChartData {
+  name: string;
+  value: number;
+}
+
 export default function RecentOrders() {
-  const [tipoData, setTipoData] = useState<any[]>([]);
-  const [responsavelData, setResponsavelData] = useState<any[]>([]);
+  const [tipoData, setTipoData] = useState<ChartData[]>([]);
+  const [responsavelData, setResponsavelData] = useState<ChartData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'tipo' | 'responsavel'>('tipo');
   const [error, setError] = useState<string | null>(null);
+
   const colorMap: Record<string, string> = {
     Concluido: '#2196F3',
     Concluído: '#2196F3',
@@ -20,27 +26,33 @@ export default function RecentOrders() {
     Neutro: '#FFEB3B',
     Negativo: '#F44336',
   };
+
   const COLORS = ['#2196F3', '#FF9800', '#9C27B0'];
-  
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
         const result = await fetchTickets();
         if (result.success) {
-          const formattedData = result.data.map((chamado: { status: string; }) => ({
+          const formattedData = result.data.map((chamado: Chamado) => ({
             ...chamado,
             status: formatStatus(chamado.status)
           }));
-          
+
           processData(formattedData);
           setError(null);
         } else {
           throw new Error(result.error);
         }
-      } catch (err: any) {
-        setError(err.message || 'Falha ao carregar os dados.');
-        console.error('Erro ao buscar chamados:', err);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+          console.error('Erro ao buscar chamados:', err);
+        } else {
+          setError('Falha ao carregar os dados.');
+          console.error('Erro desconhecido ao buscar chamados:', err);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -52,7 +64,7 @@ export default function RecentOrders() {
   const processData = (data: Chamado[]) => {
     // Processar dados para o gráfico de tipo de importação
     const tipoCount: Record<string, number> = {};
-    
+
     data.forEach(chamado => {
       if (chamado.tipo_importacao) {
         tipoCount[chamado.tipo_importacao] = (tipoCount[chamado.tipo_importacao] || 0) + 1;
@@ -60,7 +72,7 @@ export default function RecentOrders() {
         tipoCount['Não informado'] = (tipoCount['Não informado'] || 0) + 1;
       }
     });
-    
+
     const tipoDataArray = Object.keys(tipoCount).map(tipo => ({
       name: tipo,
       value: tipoCount[tipo]
@@ -69,7 +81,7 @@ export default function RecentOrders() {
 
     // Processar dados para o gráfico de responsáveis (top 5)
     const responsavelCount: Record<string, number> = {};
-    
+
     data.forEach(chamado => {
       if (chamado.responsavel) {
         responsavelCount[chamado.responsavel] = (responsavelCount[chamado.responsavel] || 0) + 1;
@@ -77,15 +89,16 @@ export default function RecentOrders() {
         responsavelCount['Não atribuído'] = (responsavelCount['Não atribuído'] || 0) + 1;
       }
     });
-    
+
     // Ordenar e pegar os top 5
     const sortedResponsaveis = Object.entries(responsavelCount)
       .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
       .map(([responsavel, count]) => ({
         name: responsavel,
         value: count
       }));
-      
+
     setResponsavelData(sortedResponsaveis);
   };
 
@@ -109,18 +122,18 @@ export default function RecentOrders() {
     );
   }
 
-   return (
+  return (
     <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2">
       <div className="flex dark:text-white justify-between items-center mb-4">
         <h3 className="text-lg font-medium">Análise por Categorias</h3>
         <div className="flex space-x-2">
-          <button 
+          <button
             className={`px-3 py-1 rounded dark:text-black ${activeTab === 'tipo' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
             onClick={() => setActiveTab('tipo')}
           >
             Tipo
           </button>
-          <button 
+          <button
             className={`px-3 py-1 rounded dark:text-black ${activeTab === 'responsavel' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
             onClick={() => setActiveTab('responsavel')}
           >
@@ -128,7 +141,7 @@ export default function RecentOrders() {
           </button>
         </div>
       </div>
-      
+
       <div className="h-[500px]">
         <ResponsiveContainer width="100%" height="100%">
           {activeTab === 'tipo' ? (
@@ -144,7 +157,7 @@ export default function RecentOrders() {
               <Legend />
               <Bar dataKey="value" name="Quantidade" fill="#3182ce">
                 {tipoData.map((entry, index) => {
-                  let color = colorMap[entry.name] || COLORS[index % COLORS.length];
+                  const color = colorMap[entry.name] || COLORS[index % COLORS.length];
                   return <Cell key={`cell-${index}`} fill={color} />;
                 })}
               </Bar>
@@ -162,7 +175,7 @@ export default function RecentOrders() {
               <Legend />
               <Bar dataKey="value" name="Quantidade" fill="#3182ce">
                 {responsavelData.map((entry, index) => {
-                  let color = colorMap[entry.name] || COLORS[index % COLORS.length];
+                  const color = colorMap[entry.name] || COLORS[index % COLORS.length];
                   return <Cell key={`cell-${index}`} fill={color} />;
                 })}
               </Bar>

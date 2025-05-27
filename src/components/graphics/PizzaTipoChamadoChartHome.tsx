@@ -5,8 +5,7 @@ import { fetchTickets, Chamado, formatTipoChamado } from '@/services/service';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export function PizzaTipoChamadoChartHome() {
-  const [tipoChamadoData, setTipoChamadoData] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [tipoChamadoData, setTipoChamadoData] = useState<{ name: string; value: number }[]>([]);
   const colorMap: Record<string, string> = {
     Concluido: '#2196F3',
     Concluído: '#2196F3',
@@ -21,14 +20,13 @@ export function PizzaTipoChamadoChartHome() {
 
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true);
       try {
         const result = await fetchTickets();
         if (result.success) {
           processTipoChamadoData(result.data);
         }
-      } finally {
-        setIsLoading(false);
+      } catch (error) {
+        console.error('Erro ao buscar tickets:', error);
       }
     };
 
@@ -37,14 +35,14 @@ export function PizzaTipoChamadoChartHome() {
 
   const processTipoChamadoData = (data: Chamado[]) => {
     const tipoChamadoCount: Record<string, number> = {};
-    
+
     data.forEach(chamado => {
       if (chamado.tipo_documento) {
         const tipo = formatTipoChamado(chamado.tipo_documento).trim();
         if (tipo) tipoChamadoCount[tipo] = (tipoChamadoCount[tipo] || 0) + 1;
       }
     });
-    
+
     const filteredData = Object.entries(tipoChamadoCount)
       .filter(([name]) => !["Não informado", "N/A", ""].includes(name))
       .map(([name, value]) => ({ name, value }));
@@ -67,17 +65,17 @@ export function PizzaTipoChamadoChartHome() {
             label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
           >
             {tipoChamadoData.map((entry, index) => {
-              let color = colorMap[entry.name] || COLORS[index % COLORS.length];
+              const color = colorMap[entry.name] || COLORS[index % COLORS.length];
               return <Cell key={`cell-${index}`} fill={color} />;
             })}
           </Pie>
-          <Legend 
+          <Legend
             layout="horizontal"
             verticalAlign="bottom"
             height={40}
             wrapperStyle={{
               fontSize: '11px',
-              paddingTop: '5px'
+              paddingTop: '5px',
             }}
           />
           <Tooltip />

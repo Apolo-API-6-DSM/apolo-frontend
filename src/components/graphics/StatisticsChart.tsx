@@ -1,12 +1,17 @@
-// components/ecommerce/StatisticsChart.tsx
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import { fetchTickets, formatStatus, Chamado } from '@/services/service';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
+type RadarData = {
+  subject: string;
+  A: number;
+  fullMark: number;
+};
+
 export default function StatisticsChart() {
-  const [radarData, setRadarData] = useState<any[]>([]);
+  const [radarData, setRadarData] = useState<RadarData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,18 +21,19 @@ export default function StatisticsChart() {
       try {
         const result = await fetchTickets();
         if (result.success) {
-          const formattedData = result.data.map((chamado: { status: string; }) => ({
+          const formattedData = result.data.map((chamado: { status: string }) => ({
             ...chamado,
-            status: formatStatus(chamado.status)
+            status: formatStatus(chamado.status),
           }));
-          
+
           processRadarData(formattedData);
           setError(null);
         } else {
           throw new Error(result.error);
         }
-      } catch (err: any) {
-        setError(err.message || 'Falha ao carregar os dados de análise.');
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'Falha ao carregar os dados de análise.';
+        setError(errorMessage);
         console.error('Erro ao buscar chamados:', err);
       } finally {
         setIsLoading(false);
@@ -38,20 +44,20 @@ export default function StatisticsChart() {
   }, []);
 
   const processRadarData = (data: Chamado[]) => {
-    // Processar dados para o gráfico de radar
     const statusCount: Record<string, number> = {};
-    
+
     data.forEach(chamado => {
       if (chamado.status) {
         statusCount[chamado.status] = (statusCount[chamado.status] || 0) + 1;
       }
     });
-    
+
     const radarDataArray = Object.keys(statusCount).map(status => ({
       subject: status,
       A: statusCount[status],
-      fullMark: Math.max(...Object.values(statusCount)) + 10
+      fullMark: Math.max(...Object.values(statusCount)) + 10,
     }));
+
     setRadarData(radarDataArray);
   };
 
@@ -76,7 +82,7 @@ export default function StatisticsChart() {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2" >
+    <div className="bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow duration-150 flex flex-col gap-2">
       <h3 className="text-lg dark:text-white font-medium mb-4">Análise de Status</h3>
       <div className="h-96">
         <ResponsiveContainer width="100%" height="100%">

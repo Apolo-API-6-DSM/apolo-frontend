@@ -5,12 +5,10 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import {
-  BoxCubeIcon,
   GridIcon,
   HorizontaLDots,
   ListIcon,
   PageIcon,
-  PieChartIcon,
   UserCircleIcon,
 } from "../icons/index";
 import { useAuth } from "@/hooks/useAuth";
@@ -72,31 +70,31 @@ const navItems: NavItem[] = [
 ];
 
 const othersItems: NavItem[] = [
-    {
-    icon: <GridIcon />,
-    name: "Login",
-    path: "/login"
-  },
-  {
-    icon: <PieChartIcon />,
-    name: "Charts",
-    subItems: [
-      { name: "Line Chart", path: "/line-chart", pro: false },
-      { name: "Bar Chart", path: "/bar-chart", pro: false },
-    ],
-  },
-  {
-    icon: <BoxCubeIcon />,
-    name: "UI Elements",
-    subItems: [
-      { name: "Alerts", path: "/alerts", pro: false },
-      { name: "Avatar", path: "/avatars", pro: false },
-      { name: "Badge", path: "/badge", pro: false },
-      { name: "Buttons", path: "/buttons", pro: false },
-      { name: "Images", path: "/images", pro: false },
-      { name: "Videos", path: "/videos", pro: false },
-    ],
-  },
+  //   {
+  //   icon: <GridIcon />,
+  //   name: "Login",
+  //   path: "/login"
+  // },
+  // {
+  //   icon: <PieChartIcon />,
+  //   name: "Charts",
+  //   subItems: [
+  //     { name: "Line Chart", path: "/line-chart", pro: false },
+  //     { name: "Bar Chart", path: "/bar-chart", pro: false },
+  //   ],
+  // },
+  // {
+  //   icon: <BoxCubeIcon />,
+  //   name: "UI Elements",
+  //   subItems: [
+  //     { name: "Alerts", path: "/alerts", pro: false },
+  //     { name: "Avatar", path: "/avatars", pro: false },
+  //     { name: "Badge", path: "/badge", pro: false },
+  //     { name: "Buttons", path: "/buttons", pro: false },
+  //     { name: "Images", path: "/images", pro: false },
+  //     { name: "Videos", path: "/videos", pro: false },
+  //   ],
+  // },
 ];
 
 const AppSidebar: React.FC = () => {
@@ -108,7 +106,6 @@ const AppSidebar: React.FC = () => {
 
   const [isClient, setIsClient] = useState(false);
   const [filteredNavItems, setFilteredNavItems] = useState<NavItem[]>([]);
-  const [filteredOtherItems, setFilteredOtherItems] = useState<NavItem[]>([]);
   const [openSubmenu, setOpenSubmenu] = useState<{
     type: "main" | "others";
     index: number;
@@ -159,9 +156,6 @@ const AppSidebar: React.FC = () => {
       navItems.filter(item => !item.requiredRole || item.requiredRole === userRole)
     );
     
-    setFilteredOtherItems(
-      othersItems.filter(item => !item.requiredRole || item.requiredRole === userRole)
-    );
   }, []);
 
   useEffect(() => {
@@ -367,14 +361,21 @@ const AppSidebar: React.FC = () => {
             <div>
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
+                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
                 }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? "Menu" : <HorizontaLDots />}
               </h2>
               {renderMenuItems(filteredNavItems.length > 0 ? filteredNavItems : navItems, "main")}
+            </div>
+
+            <div>
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                  !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+                }`}
+              >
+              </h2>
             </div>
           </div>
         </nav>

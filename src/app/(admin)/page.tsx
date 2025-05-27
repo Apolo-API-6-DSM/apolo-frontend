@@ -1,18 +1,9 @@
 "use client";
 
-import type { Metadata } from "next";
-import { EcommerceMetrics } from "@/components/graphics/EcommerceMetrics";
-import MonthlyTarget from "@/components/graphics/MonthlyTarget";
-import RecentOrders from "@/components/graphics/RecentOrders";
-import DemographicCard from "@/components/graphics/DemographicCard";
 import CardHome from "@/components/chamados/cardHome/CardHome";
 import Link from "next/link";
 import DashboardCharts from "./DashboardCharts";
 import { useEffect, useState } from "react";
-
-// export const metadata: Metadata = {
-//   title: "Apolo - Home"
-// };
 
 interface Chamado {
   id: number;

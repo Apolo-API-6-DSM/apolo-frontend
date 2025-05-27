@@ -28,10 +28,15 @@ export function EcommerceMetrics() {
         } else {
           throw new Error(result.error);
         }
-      } catch (err: any) {
-        setError(err.message || 'Falha ao carregar os chamados. Por favor, tente novamente.');
-        console.error('Erro ao buscar chamados:', err);
-      } finally {
+      } catch (err: unknown) {
+          if (err instanceof Error) {
+            setError(err.message);
+            console.error('Erro ao buscar chamados:', err);
+          } else {
+            setError('Falha ao carregar os chamados. Por favor, tente novamente.');
+            console.error('Erro desconhecido ao buscar chamados:', err);
+          }
+        } finally {
         setIsLoading(false);
       }
     };

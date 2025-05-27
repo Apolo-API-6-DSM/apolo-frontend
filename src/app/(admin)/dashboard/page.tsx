@@ -1,25 +1,18 @@
 "use client";
 
-import type { Metadata } from "next";
 import { EcommerceMetrics } from "@/components/graphics/EcommerceMetrics";
 import React from "react";
 import MonthlyTarget from "@/components/graphics/MonthlyTarget";
 import MonthlySalesChart from "@/components/graphics/MonthlySalesChart";
-import StatisticsChart from "@/components/graphics/StatisticsChart";
 import RecentOrders from "@/components/graphics/RecentOrders";
 import DemographicCard from "@/components/graphics/DemographicCard";
 import { DashboardDataProvider } from "@/components/graphics/DataProvider";
-import PizzaEmocoesChart from "@/components/graphics/PizzaEmocoesChart";
 import { PizzaTipoChamadoChart } from "@/components/graphics/PizzaTipoChamadoChart";
-import ResponsaveisAtivosCard from "@/components/graphics/ResponsaveisAtivosChart";
-import TempoMedioFechamentoCard from "@/components/graphics/TempoMedioFechamentoChart";
-import ChamadasAbertasCard from "@/components/graphics/ChamadasAbertasCard";
 import EmocaoPorDiaChart from "@/components/graphics/EmocaoPorDiaChart";
 import ChamadoPorDiaChart from "@/components/graphics/ChamadoPorDiaChart";
 import { DashboardDateProvider, useDashboardDate } from "@/components/graphics/DashboardDateContext";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { FiSearch } from "react-icons/fi";
 import { ptBR } from "date-fns/locale/pt-BR";
 
 function DashboardDateFilter() {

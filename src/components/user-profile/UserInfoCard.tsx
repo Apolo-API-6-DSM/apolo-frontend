@@ -10,10 +10,16 @@ import { auth } from "@/services/auth";
 import { useRouter } from "next/navigation";
 import { ChangePasswordModal } from "../alteracaoSenha/ChangePasswordModal";
 
+interface User {
+  id: string;
+  nome: string;
+  email: string;
+}
+
 export default function UserInfoCard() {
   const router = useRouter();
   const { isOpen, openModal, closeModal } = useModal();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -31,8 +37,8 @@ export default function UserInfoCard() {
           nome: userData.nome || '',
           email: userData.email || '',
         });
-      } catch (error) {
-        console.error("Failed to load user data:", error);
+      } catch (_error) {
+        console.error("Failed to load user data:", _error);
         setError("Erro ao carregar dados do usuário");
       } finally {
         setLoading(false);
@@ -66,9 +72,21 @@ export default function UserInfoCard() {
     return <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">Carregando...</div>;
   }
 
-  if (!user) {
-    return <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">Erro ao carregar dados do usuário</div>;
-  }
+  if (error) {
+  return (
+    <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+      {error}
+    </div>
+  );
+}
+
+if (!user) {
+  return (
+    <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+      Usuário não encontrado.
+    </div>
+  );
+}
 
   const canEdit = auth.getUserInfo()?.papel === 'admin' || auth.getUserInfo()?.id === user.id;
 

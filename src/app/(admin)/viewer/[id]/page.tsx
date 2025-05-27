@@ -8,7 +8,6 @@ import { useModal } from "@/hooks/useModal";
 import { Modal } from "@/components/ui/modal";
 import { useRouter } from "next/navigation";
 import { userService } from "@/services/user";
-import { auth } from "@/services/auth";
 import Badge from "@/components/ui/badge/Badge";
 import { useParams } from "next/navigation";
 

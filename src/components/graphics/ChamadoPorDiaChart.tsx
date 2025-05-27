@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { fetchTickets, Chamado } from '@/services/service';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, parseISO } from 'date-fns';
@@ -9,15 +9,63 @@ import { useDashboardDate } from './DashboardDateContext';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
+interface ChartDataItem {
+  [key: string]: string | number;
+  data: string;
+}
+
 const ChamadoPorDiaChart = () => {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<ChartDataItem[]>([]);
   const [allChamados, setAllChamados] = useState<Chamado[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { selectedRange } = useDashboardDate();
-
-  // Adiciona novamente o DatePicker local para filtro específico
   const [dataLocal, setDataLocal] = useState<Date>(selectedRange.start ?? new Date());
+
+  const formatTipoDocumento = useCallback((tipo: string): string => {
+    if (!tipo) return 'Outros';
+    
+    tipo = tipo.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    
+    if (tipo.includes('reclamacao') || tipo.includes('reclamação')) return 'Reclamação';
+    if (tipo.includes('pedido') && tipo.includes('suporte')) return 'Pedido de Suporte';
+    if (tipo.includes('duvida') || tipo.includes('dúvida')) return 'Dúvida';
+    
+    return tipo.charAt(0).toUpperCase() + tipo.slice(1);
+  }, []);
+
+  const processChartData = useCallback((chamados: Chamado[], start: Date, end: Date | null) => {
+    const startDate = format(start, 'yyyy-MM-dd');
+    const endDate = end ? format(end, 'yyyy-MM-dd') : startDate;
+    
+    const chamadosNoIntervalo = chamados.filter(chamado => {
+      if (!chamado.data_abertura) return false;
+      const chamadoDate = format(parseISO(chamado.data_abertura), 'yyyy-MM-dd');
+      return chamadoDate >= startDate && chamadoDate <= endDate;
+    });
+
+    const contagem: Record<string, number> = {};
+
+    chamadosNoIntervalo.forEach(chamado => {
+      const tipo = formatTipoDocumento(chamado.tipo_documento || '');
+      contagem[tipo] = (contagem[tipo] || 0) + 1;
+    });
+
+    const chartData = Object.keys(contagem).map(tipo => ({
+      name: tipo,
+      value: contagem[tipo]
+    }));
+
+    chartData.sort((a, b) => b.value - a.value);
+
+    setData([{
+      data: end ? `${format(start, 'dd/MM/yyyy')} - ${format(end, 'dd/MM/yyyy')}` : format(start, 'dd/MM/yyyy'),
+      ...chartData.reduce((acc, item) => {
+        const key = item.name.replace(/\s+/g, '_');
+        return { ...acc, [key]: item.value };
+      }, {} as Record<string, number>)
+    }]);
+  }, [formatTipoDocumento]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,8 +78,9 @@ const ChamadoPorDiaChart = () => {
         } else {
           throw new Error(result.error || 'Erro ao buscar chamados');
         }
-      } catch (err: any) {
-        setError(err.message || 'Falha ao carregar dados');
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'Falha ao carregar dados';
+        setError(errorMessage);
         console.error('Erro:', err);
       } finally {
         setIsLoading(false);
@@ -45,69 +94,15 @@ const ChamadoPorDiaChart = () => {
     if (allChamados.length > 0 && selectedRange.start) {
       processChartData(allChamados, selectedRange.start, selectedRange.end);
     }
-  }, [allChamados, selectedRange]);
+  }, [allChamados, selectedRange, processChartData]);
 
   useEffect(() => {
     if (selectedRange.start) setDataLocal(selectedRange.start);
   }, [selectedRange]);
 
-  const formatTipoDocumento = (tipo: string): string => {
-    if (!tipo) return 'Outros';
-    
-    // Remove acentos e coloca em minúsculo
-    tipo = tipo.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    
-    // Mapeia variações comuns
-    if (tipo.includes('reclamacao') || tipo.includes('reclamação')) return 'Reclamação';
-    if (tipo.includes('pedido') && tipo.includes('suporte')) return 'Pedido de Suporte';
-    if (tipo.includes('duvida') || tipo.includes('dúvida')) return 'Dúvida';
-    
-    // Padroniza outros casos (primeira letra maiúscula)
-    return tipo.charAt(0).toUpperCase() + tipo.slice(1);
-  };
-
-  const processChartData = (chamados: Chamado[], start: Date, end: Date | null) => {
-    const startDate = format(start, 'yyyy-MM-dd');
-    const endDate = end ? format(end, 'yyyy-MM-dd') : startDate;
-    
-    // Filtra chamados pelo intervalo de datas
-    const chamadosNoIntervalo = chamados.filter(chamado => {
-      if (!chamado.data_abertura) return false;
-      const chamadoDate = format(parseISO(chamado.data_abertura), 'yyyy-MM-dd');
-      return chamadoDate >= startDate && chamadoDate <= endDate;
-    });
-
-    // Conta tipos de documento dinamicamente
-    const contagem: Record<string, number> = {};
-
-    chamadosNoIntervalo.forEach(chamado => {
-      const tipo = formatTipoDocumento(chamado.tipo_documento || '');
-      contagem[tipo] = (contagem[tipo] || 0) + 1;
-    });
-
-    // Formata para o gráfico
-    const chartData = Object.keys(contagem).map(tipo => ({
-      name: tipo,
-      value: contagem[tipo]
-    }));
-
-    // Ordena por quantidade (opcional)
-    chartData.sort((a, b) => b.value - a.value);
-
-    setData([{
-      data: end ? `${format(start, 'dd/MM/yyyy')} - ${format(end, 'dd/MM/yyyy')}` : format(start, 'dd/MM/yyyy'),
-      ...chartData.reduce((acc, item) => {
-        // Substitui espaços por underscore para usar como chave
-        const key = item.name.replace(/\s+/g, '_');
-        return { ...acc, [key]: item.value };
-      }, {})
-    }]);
-  };
-
-  // Gera as barras dinamicamente
   const renderBars = () => {
     if (data.length === 0) return null;
-    // Cores padronizadas: positivo, neutro, negativo, concluído, outros
+    
     const colorMap: Record<string, string> = {
       Concluido: '#2196F3',
       Concluído: '#2196F3',
@@ -118,20 +113,23 @@ const ChamadoPorDiaChart = () => {
       Neutro: '#FFEB3B',
       Negativo: '#F44336',
     };
+    
     const defaultColors = ['#2196F3', '#FF9800', '#9C27B0'];
-    const entries = Object.entries(data[0]).filter(([key]) => key !== 'data');
-    return entries.map(([key, _], index) => {
-      const nome = key.replace(/_/g, ' ');
-      const cor = colorMap[nome] || defaultColors[index % defaultColors.length];
-      return (
-        <Bar 
-          key={key}
-          dataKey={key}
-          fill={cor}
-          name={nome}
-        />
-      );
-    });
+    
+    return Object.entries(data[0])
+      .filter(([key]) => key !== 'data')
+      .map(([key], index) => {
+        const nome = key.replace(/_/g, ' ');
+        const cor = colorMap[nome] || defaultColors[index % defaultColors.length];
+        return (
+          <Bar 
+            key={key}
+            dataKey={key}
+            fill={cor}
+            name={nome}
+          />
+        );
+      });
   };
 
   if (isLoading) {

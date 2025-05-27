@@ -71,12 +71,24 @@ export const importJiraCSV = async (
       success: true,
       data: uploadResponse.data,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+  if (axios.isAxiosError(error)) {
     return {
       success: false,
       error: error.response?.data?.message || 'Erro ao importar arquivo',
     };
+  } else if (error instanceof Error) {
+    return {
+      success: false,
+      error: error.message,
+    };
+  } else {
+    return {
+      success: false,
+      error: 'Erro desconhecido',
+    };
   }
+}
 };
 
 export const importAlternativoCSV = async (
@@ -115,12 +127,25 @@ export const importAlternativoCSV = async (
       success: true,
       data: uploadResponse.data,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+  if (axios.isAxiosError(error)) {
     return {
       success: false,
       error: error.response?.data?.message || 'Erro ao importar arquivo',
     };
+  } else if (error instanceof Error) {
+    return {
+      success: false,
+      error: error.message,
+    };
+  } else {
+    return {
+      success: false,
+      error: 'Erro desconhecido',
+    };
   }
+}
+
 };
 
 
@@ -131,12 +156,25 @@ export const fetchTickets = async () => {
       success: true,
       data: response.data,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+  if (axios.isAxiosError(error)) {
     return {
       success: false,
-      error: error.response?.data?.message || 'Erro ao buscar chamados',
+      error: error.response?.data?.message || 'Erro ao importar arquivo',
+    };
+  } else if (error instanceof Error) {
+    return {
+      success: false,
+      error: error.message,
+    };
+  } else {
+    return {
+      success: false,
+      error: 'Erro desconhecido',
     };
   }
+}
+
 };
 
 export const fetchTicketById = async (id: string) => {
@@ -148,13 +186,25 @@ export const fetchTicketById = async (id: string) => {
       success: true,
       data: response.data,
     };
-  } catch (error: any) {
-    console.error("Erro na requisição:", error);
+  } catch (error: unknown) {
+  if (axios.isAxiosError(error)) {
     return {
       success: false,
-      error: error.response?.data?.message || 'Erro ao buscar o chamado',
+      error: error.response?.data?.message || 'Erro ao importar arquivo',
+    };
+  } else if (error instanceof Error) {
+    return {
+      success: false,
+      error: error.message,
+    };
+  } else {
+    return {
+      success: false,
+      error: 'Erro desconhecido',
     };
   }
+}
+
 };
 
 export const fetchTicketByNomeArquivoId = async (id: number) => {
@@ -166,13 +216,25 @@ export const fetchTicketByNomeArquivoId = async (id: number) => {
       success: true,
       data: response.data,
     };
-  } catch (error: any) {
-    console.error("Erro na requisição:", error);
+  } catch (error: unknown) {
+  if (axios.isAxiosError(error)) {
     return {
       success: false,
-      error: error.response?.data?.message || 'Erro ao buscar o chamados',
+      error: error.response?.data?.message || 'Erro ao importar arquivo',
+    };
+  } else if (error instanceof Error) {
+    return {
+      success: false,
+      error: error.message,
+    };
+  } else {
+    return {
+      success: false,
+      error: 'Erro desconhecido',
     };
   }
+}
+
 };
 
 export const fetchArquivosInfo = async () => {
@@ -182,12 +244,25 @@ export const fetchArquivosInfo = async () => {
       success: true,
       data: response.data,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+  if (axios.isAxiosError(error)) {
     return {
       success: false,
-      error: error.response?.data?.message || 'Erro ao buscar informações de arquivos',
+      error: error.response?.data?.message || 'Erro ao importar arquivo',
+    };
+  } else if (error instanceof Error) {
+    return {
+      success: false,
+      error: error.message,
+    };
+  } else {
+    return {
+      success: false,
+      error: 'Erro desconhecido',
     };
   }
+}
+
 };
 
 
